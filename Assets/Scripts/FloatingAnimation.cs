@@ -196,3 +196,4 @@ public class FloatingAnimation : MonoBehaviour
         return frequency;
     }
 }
+
