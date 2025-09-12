@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Title.unity
+    path: Assets/Scenes/SecurityGame/Security_Title.unity
     guid: 9e4027b8ad00e4e0da5763c5db733a24
   - enabled: 1
     path: Assets/Scenes/explaination1.unity
