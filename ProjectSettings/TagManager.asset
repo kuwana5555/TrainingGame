@@ -22,6 +22,9 @@ TagManager:
   - EnemyBullet
   - Ground
   - Flag
+  - Grabber
+  - Grabbable
+  - GrabbableIcon
   layers:
   - Default
   - TransparentFX
