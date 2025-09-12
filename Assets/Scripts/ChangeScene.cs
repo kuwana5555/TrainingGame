@@ -99,7 +99,9 @@ public class ChangeScene : MonoBehaviour
             yield return new WaitForSeconds(fadeOutTime);
         }
         
-        // シーンを切り替え
+        // 遷移コンテキストを設定してからシーンを切り替え
+        string current = SceneManager.GetActiveScene().name;
+        SceneTransitionContext.Set(current, sceneName);
         SceneManager.LoadScene(sceneName);
     }
 }

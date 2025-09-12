@@ -14,6 +14,10 @@ public class IntroCameraDirector : MonoBehaviour
 	public Camera introCamera;
 	public Camera mainCamera;
 
+	[Header("Activation Condition")]
+	[Tooltip("この遷移元シーン名→遷移先シーン名のときのみイントロを有効化する")] public string allowedFromScene;
+	[Tooltip("この遷移元シーン名→遷移先シーン名のときのみイントロを有効化する")] public string allowedToScene;
+
 	[Header("Zoom Settings")]
 	[Tooltip("パースペクティブ時の開始FOV。Orthographicの場合は開始Size")]
 	public float zoomStart = 60f;
@@ -44,6 +48,13 @@ public class IntroCameraDirector : MonoBehaviour
 
 	void Start()
 	{
+		// 設定されている遷移条件に一致しなければ、イントロをスキップしてメインカメラへ
+		if (!ShouldRunIntro())
+		{
+			ForceUseMainCamera();
+			return;
+		}
+
 		if (introCamera == null || mainCamera == null)
 		{
 			Debug.LogError("IntroCameraDirector: カメラ参照が設定されていません。");
@@ -66,6 +77,35 @@ public class IntroCameraDirector : MonoBehaviour
 		}
 
 		if (!_running) StartCoroutine(RunSequence());
+	}
+
+	bool ShouldRunIntro()
+	{
+		// 設定が空なら常に無効化扱いにする（明示的に指定された組だけ許可）
+		if (string.IsNullOrEmpty(allowedFromScene) || string.IsNullOrEmpty(allowedToScene))
+		{
+			return false;
+		}
+
+		// ChangeScene.Load から設定された直近の遷移情報を確認
+		var fromName = SceneTransitionContext.FromSceneName;
+		var toName = SceneTransitionContext.ToSceneName;
+		if (string.IsNullOrEmpty(fromName) || string.IsNullOrEmpty(toName))
+		{
+			return false;
+		}
+
+		return string.Equals(fromName, allowedFromScene) && string.Equals(toName, allowedToScene);
+	}
+
+	void ForceUseMainCamera()
+	{
+		if (mainCamera != null) mainCamera.enabled = true;
+		if (introCamera != null) introCamera.enabled = false;
+		SetComponentsEnabled(true);
+		// 必要であればフェーダーも透明に
+		if (screenFader != null) screenFader.SetAlpha(0f);
+		// イントロは実行しない
 	}
 
 	IEnumerator RunSequence()

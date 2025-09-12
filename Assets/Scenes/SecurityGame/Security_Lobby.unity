@@ -1808,6 +1808,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   introCamera: {fileID: 1824333390}
   mainCamera: {fileID: 519420031}
+  allowedFromScene: Security_Title
+  allowedToScene: Security_Lobby
   zoomStart: 41.37
   zoomEnd: 24
   zoomDuration: 4
