@@ -23,6 +23,14 @@ public class ObjectGrabber : MonoBehaviour
     [SerializeField] private string grabbableIconTag = "GrabbableIcon"; // 掴みアイコンのタグ
     [SerializeField] private bool hideIconOnGrab = true;         // 掴んだ時にアイコンを非表示にするか
     
+    [Header("音声設定")]
+    [SerializeField] private AudioSource audioSource;            // 音声を再生するAudioSource
+    [SerializeField] private AudioClip grabSound;               // 掴み時の音声クリップ
+    [SerializeField] private AudioClip releaseSound;            // 離した時の音声クリップ
+    [SerializeField] private float volume = 1.0f;               // 音量（0.0～1.0）
+    [SerializeField] private bool playGrabSound = true;         // 掴み音を再生するか
+    [SerializeField] private bool playReleaseSound = true;      // 離す音を再生するか
+    
     private GameObject grabbedObject = null;                     // 掴んでいるオブジェクト
     private Rigidbody grabbedRigidbody = null;                   // 掴んでいるオブジェクトのRigidbody(3D)
     private Rigidbody2D grabbedRigidbody2D = null;               // 掴んでいるオブジェクトのRigidbody(2D)
@@ -58,7 +66,8 @@ public class ObjectGrabber : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        // AudioSourceの設定
+        SetupAudioSource();
     }
 
     // Update is called once per frame
@@ -184,6 +193,12 @@ public class ObjectGrabber : MonoBehaviour
             grabbedRigidbody2D.freezeRotation = freezeRotation;
         }
         
+        // 掴み音を再生
+        if (playGrabSound && grabSound != null)
+        {
+            PlayGrabSound();
+        }
+        
         Debug.Log($"オブジェクトを掴みました: {obj.name}");
     }
 
@@ -218,6 +233,12 @@ public class ObjectGrabber : MonoBehaviour
                 grabbedRigidbody2D.gravityScale = originalGravityScale2D;
                 grabbedRigidbody2D.freezeRotation = originalFreezeRotation2D;
                 grabbedRigidbody2D.constraints = originalConstraints2D;
+            }
+            
+            // 離す音を再生
+            if (playReleaseSound && releaseSound != null)
+            {
+                PlayReleaseSound();
             }
             
             Debug.Log($"オブジェクトを離しました: {grabbedObject.name}");
@@ -493,5 +514,63 @@ public class ObjectGrabber : MonoBehaviour
     public bool IsGrabbing()
     {
         return isGrabbing;
+    }
+
+    // AudioSourceの設定
+    private void SetupAudioSource()
+    {
+        if (audioSource == null)
+        {
+            // AudioSourceが設定されていない場合は、このオブジェクトに追加
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+        }
+        
+        if (audioSource != null)
+        {
+            audioSource.volume = volume;
+        }
+    }
+
+    // 掴み音を再生
+    private void PlayGrabSound()
+    {
+        if (audioSource != null && grabSound != null)
+        {
+            audioSource.PlayOneShot(grabSound, volume);
+            Debug.Log($"掴み音を再生: {grabSound.name}");
+        }
+        else
+        {
+            Debug.LogWarning("掴み音の再生に失敗: AudioSourceまたはGrabSoundが設定されていません");
+        }
+    }
+
+    // 離す音を再生
+    private void PlayReleaseSound()
+    {
+        if (audioSource != null && releaseSound != null)
+        {
+            audioSource.PlayOneShot(releaseSound, volume);
+            Debug.Log($"離す音を再生: {releaseSound.name}");
+        }
+        else
+        {
+            Debug.LogWarning("離す音の再生に失敗: AudioSourceまたはReleaseSoundが設定されていません");
+        }
+    }
+
+    // デバッグ用：Inspectorでボタンから手動で掴み音を再生
+    [ContextMenu("Play Grab Sound")]
+    public void ManualPlayGrabSound()
+    {
+        PlayGrabSound();
+    }
+
+    // デバッグ用：Inspectorでボタンから手動で離す音を再生
+    [ContextMenu("Play Release Sound")]
+    public void ManualPlayReleaseSound()
+    {
+        PlayReleaseSound();
     }
 }

@@ -44,6 +44,19 @@ public class TriggerActivator : MonoBehaviour
     [SerializeField] private float volume = 1.0f;          // 音量（0.0～1.0）
     [SerializeField] private bool loop = false;            // ループ再生するか
     
+    [Header("特殊音声設定")]
+    [SerializeField] private AudioClip virusDetectionSound; // ウイルス検知時の音声クリップ
+    [SerializeField] private AudioClip multiTriggerSound;   // 複数接触条件達成時の音声クリップ
+    [SerializeField] private bool playVirusSound = true;    // ウイルス検知音を再生するか
+    [SerializeField] private bool playMultiTriggerSound = true; // 複数接触音を再生するか
+    [SerializeField] private float virusSoundVolume = 1.0f; // ウイルス音の音量
+    [SerializeField] private float multiTriggerSoundVolume = 1.0f; // 複数接触音の音量
+    
+    [Header("時間差実行設定")]
+    [SerializeField] private bool useDelayedActivation = false; // 時間差でアクティブ化するか
+    [SerializeField] private float activationDelay = 1.0f;     // アクティブ化までの遅延時間（秒）
+    [SerializeField] private bool showDelayProgress = true;    // 遅延の進行状況を表示するか
+    
     [Header("動作設定")]
     [SerializeField] private bool oneTimeOnly = true;      // 1回のみ機能するか
     [SerializeField] private bool persistentInScene = true; // シーン内で継続するか
@@ -73,6 +86,13 @@ public class TriggerActivator : MonoBehaviour
     private float virusTimerProgress = 0f;    // ウイルスタイマーの進行状況（0.0～1.0）
     private float currentVirusTimer = 0f;     // 現在のウイルスタイマー値
     private Collider2D currentVirusCollider = null; // 現在タイマー中のウイルスコライダー
+    
+    // 時間差実行用の変数
+    private bool isDelayedActivationRunning = false; // 時間差アクティブ化が動作中かどうか
+    private float delayedActivationProgress = 0f;    // 時間差アクティブ化の進行状況（0.0～1.0）
+    private float currentDelayedTimer = 0f;          // 現在の時間差タイマー値
+    private Coroutine delayedActivationCoroutine;    // 時間差アクティブ化コルーチンの参照
+    private GameObject[] pendingActivationObjects;   // 待機中のアクティブ化対象オブジェクト
     
     // Start is called before the first frame update
     void Start()
@@ -105,6 +125,12 @@ public class TriggerActivator : MonoBehaviour
         if (useVirusTimer && isVirusTimerRunning)
         {
             UpdateVirusTimer();
+        }
+        
+        // 時間差アクティブ化が有効な場合の処理
+        if (useDelayedActivation && isDelayedActivationRunning)
+        {
+            UpdateDelayedActivation();
         }
         
         // プレイヤーがトリガー内にいる間は継続してアクティブ状態を維持
@@ -311,17 +337,29 @@ public class TriggerActivator : MonoBehaviour
         // レイヤー条件をチェック
         GameObject[] objectsToActivate = GetObjectsToActivate();
         
-        if (activateOnEnter)
+        // 複数接触条件達成音を再生
+        if (playMultiTriggerSound && multiTriggerSound != null)
         {
-            SetObjectsActive(objectsToActivate, true);
-            hasTriggered = true;
-            Debug.Log($"複数トリガー発動: {gameObject.name} - {objectsToActivate.Length}個のオブジェクトをアクティブにしました");
+            PlayMultiTriggerSound();
         }
         
-        // 音声再生（入った時）
+        // 通常の音声再生（入った時）
         if (playOnEnter && !hasPlayedAudio)
         {
             PlayAudio();
+        }
+        
+        // 時間差アクティブ化を使用する場合
+        if (useDelayedActivation && activateOnEnter)
+        {
+            StartDelayedActivation(objectsToActivate);
+        }
+        else if (activateOnEnter)
+        {
+            // 即座にアクティブ化
+            SetObjectsActive(objectsToActivate, true);
+            hasTriggered = true;
+            Debug.Log($"複数トリガー発動: {gameObject.name} - {objectsToActivate.Length}個のオブジェクトをアクティブにしました");
         }
     }
     
@@ -350,7 +388,13 @@ public class TriggerActivator : MonoBehaviour
             Debug.Log($"activateOnEnter: false - ウイルスオブジェクトをアクティブ化しません");
         }
         
-        // 音声再生（入った時）
+        // ウイルス検知音を再生
+        if (playVirusSound && virusDetectionSound != null)
+        {
+            PlayVirusSound();
+        }
+        
+        // 通常の音声再生（入った時）
         if (playOnEnter && !hasPlayedAudio)
         {
             Debug.Log("音声再生を実行します");
@@ -382,18 +426,13 @@ public class TriggerActivator : MonoBehaviour
         
         Debug.Log($"通常アイテム: 正常なオブジェクトをアクティブにします (対象オブジェクト数: {objectsToActivate?.Length ?? 0})");
         
-        if (activateOnEnter)
+        // 複数接触条件達成音を再生
+        if (playMultiTriggerSound && multiTriggerSound != null)
         {
-            SetObjectsActive(objectsToActivate, true);
-            hasTriggered = true;
-            Debug.Log($"アイテム運搬トリガー発動: {gameObject.name} - {objectsToActivate?.Length ?? 0}個のオブジェクトをアクティブにしました");
-        }
-        else
-        {
-            Debug.Log($"activateOnEnter: false - オブジェクトをアクティブ化しません");
+            PlayMultiTriggerSound();
         }
         
-        // 音声再生（入った時）
+        // 通常の音声再生（入った時）
         if (playOnEnter && !hasPlayedAudio)
         {
             Debug.Log("音声再生を実行します");
@@ -402,6 +441,23 @@ public class TriggerActivator : MonoBehaviour
         else
         {
             Debug.Log($"音声再生スキップ: playOnEnter={playOnEnter}, hasPlayedAudio={hasPlayedAudio}");
+        }
+        
+        // 時間差アクティブ化を使用する場合
+        if (useDelayedActivation && activateOnEnter)
+        {
+            StartDelayedActivation(objectsToActivate);
+        }
+        else if (activateOnEnter)
+        {
+            // 即座にアクティブ化
+            SetObjectsActive(objectsToActivate, true);
+            hasTriggered = true;
+            Debug.Log($"アイテム運搬トリガー発動: {gameObject.name} - {objectsToActivate?.Length ?? 0}個のオブジェクトをアクティブにしました");
+        }
+        else
+        {
+            Debug.Log($"activateOnEnter: false - オブジェクトをアクティブ化しません");
         }
         
         Debug.Log("=== ActivateItemCarryTrigger() 終了 ===");
@@ -682,6 +738,34 @@ public class TriggerActivator : MonoBehaviour
         }
     }
 
+    // ウイルス検知音を再生
+    private void PlayVirusSound()
+    {
+        if (audioSource != null && virusDetectionSound != null)
+        {
+            audioSource.PlayOneShot(virusDetectionSound, virusSoundVolume);
+            Debug.Log($"ウイルス検知音再生: {gameObject.name} - {virusDetectionSound.name}");
+        }
+        else
+        {
+            Debug.LogWarning($"ウイルス検知音再生失敗: {gameObject.name} - AudioSourceまたはVirusDetectionSoundが設定されていません");
+        }
+    }
+
+    // 複数接触条件達成音を再生
+    private void PlayMultiTriggerSound()
+    {
+        if (audioSource != null && multiTriggerSound != null)
+        {
+            audioSource.PlayOneShot(multiTriggerSound, multiTriggerSoundVolume);
+            Debug.Log($"複数接触音再生: {gameObject.name} - {multiTriggerSound.name}");
+        }
+        else
+        {
+            Debug.LogWarning($"複数接触音再生失敗: {gameObject.name} - AudioSourceまたはMultiTriggerSoundが設定されていません");
+        }
+    }
+
     // デバッグ用：Inspectorでボタンから手動でリセット
     [ContextMenu("Reset Trigger")]
     public void ResetTrigger()
@@ -703,6 +787,7 @@ public class TriggerActivator : MonoBehaviour
         // タイマーもリセット
         ResetTimer();
         ResetVirusTimer();
+        ResetDelayedActivation();
         
         // 音声を停止
         if (audioSource != null && audioSource.isPlaying)
@@ -727,6 +812,126 @@ public class TriggerActivator : MonoBehaviour
     public void ManualPlayAudio()
     {
         PlayAudio();
+    }
+
+    // デバッグ用：Inspectorでボタンから手動でウイルス検知音を再生
+    [ContextMenu("Play Virus Sound")]
+    public void ManualPlayVirusSound()
+    {
+        PlayVirusSound();
+    }
+
+    // デバッグ用：Inspectorでボタンから手動で複数接触音を再生
+    [ContextMenu("Play Multi Trigger Sound")]
+    public void ManualPlayMultiTriggerSound()
+    {
+        PlayMultiTriggerSound();
+    }
+
+    // 時間差アクティブ化を開始
+    private void StartDelayedActivation(GameObject[] objectsToActivate)
+    {
+        if (delayedActivationCoroutine != null)
+        {
+            StopCoroutine(delayedActivationCoroutine);
+        }
+        
+        pendingActivationObjects = objectsToActivate;
+        isDelayedActivationRunning = true;
+        currentDelayedTimer = 0f;
+        delayedActivationProgress = 0f;
+        
+        delayedActivationCoroutine = StartCoroutine(DelayedActivationCoroutine());
+        
+        Debug.Log($"時間差アクティブ化開始: {activationDelay}秒後に{objectsToActivate?.Length ?? 0}個のオブジェクトをアクティブ化します");
+    }
+
+    // 時間差アクティブ化コルーチン
+    private IEnumerator DelayedActivationCoroutine()
+    {
+        while (currentDelayedTimer < activationDelay)
+        {
+            currentDelayedTimer += Time.deltaTime;
+            delayedActivationProgress = currentDelayedTimer / activationDelay;
+            
+            if (showDelayProgress)
+            {
+                Debug.Log($"時間差アクティブ化進行中: {delayedActivationProgress:F2} ({currentDelayedTimer:F2}/{activationDelay:F2}秒)");
+            }
+            
+            yield return null;
+        }
+        
+        // 時間差アクティブ化完了
+        CompleteDelayedActivation();
+    }
+
+    // 時間差アクティブ化を更新
+    private void UpdateDelayedActivation()
+    {
+        if (isDelayedActivationRunning)
+        {
+            currentDelayedTimer += Time.deltaTime;
+            delayedActivationProgress = currentDelayedTimer / activationDelay;
+            
+            if (currentDelayedTimer >= activationDelay)
+            {
+                CompleteDelayedActivation();
+            }
+        }
+    }
+
+    // 時間差アクティブ化を完了
+    private void CompleteDelayedActivation()
+    {
+        isDelayedActivationRunning = false;
+        
+        if (pendingActivationObjects != null)
+        {
+            SetObjectsActive(pendingActivationObjects, true);
+            hasTriggered = true;
+            Debug.Log($"時間差アクティブ化完了: {gameObject.name} - {pendingActivationObjects.Length}個のオブジェクトをアクティブにしました");
+        }
+        
+        pendingActivationObjects = null;
+        delayedActivationCoroutine = null;
+    }
+
+    // 時間差アクティブ化をリセット
+    private void ResetDelayedActivation()
+    {
+        if (delayedActivationCoroutine != null)
+        {
+            StopCoroutine(delayedActivationCoroutine);
+            delayedActivationCoroutine = null;
+        }
+        
+        isDelayedActivationRunning = false;
+        currentDelayedTimer = 0f;
+        delayedActivationProgress = 0f;
+        pendingActivationObjects = null;
+    }
+
+    // 時間差アクティブ化の進行状況を取得（外部からアクセス可能）
+    public float GetDelayedActivationProgress()
+    {
+        return delayedActivationProgress;
+    }
+
+    // 時間差アクティブ化が動作中かどうかを取得（外部からアクセス可能）
+    public bool IsDelayedActivationRunning()
+    {
+        return isDelayedActivationRunning;
+    }
+
+    // 時間差アクティブ化の残り時間を取得（外部からアクセス可能）
+    public float GetDelayedActivationRemainingTime()
+    {
+        if (isDelayedActivationRunning)
+        {
+            return Mathf.Max(0f, activationDelay - currentDelayedTimer);
+        }
+        return 0f;
     }
     
     // デバッグ用：Inspectorでボタンから複数接触状態を表示

@@ -20,6 +20,14 @@ public class ChangeScene : MonoBehaviour
     public float waitTime = 3.0f;   //シーン切り替えまでの待機時間（秒）
     public float fadeOutTime = 1.0f; //フェードアウト時間（秒）
     
+    [Header("音声設定")]
+    public AudioSource audioSource;            // 音声を再生するAudioSource
+    public AudioClip blinkStartSound;          // 点滅開始時の音声クリップ
+    public AudioClip fadeOutSound;             // フェードアウト開始時の音声クリップ
+    public float volume = 1.0f;                // 音量（0.0～1.0）
+    public bool playBlinkStartSound = true;    // 点滅開始音を再生するか
+    public bool playFadeOutSound = true;       // フェードアウト音を再生するか
+    
     private bool isBlinking = false; //点滅中かどうか
     private bool isFadingOut = false; //フェードアウト中かどうか
     private Coroutine blinkingCoroutine; //点滅コルーチンの参照
@@ -31,6 +39,9 @@ public class ChangeScene : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // AudioSourceの設定
+        SetupAudioSource();
+        
         // 常時点滅を開始
         if (blinkingText != null)
         {
@@ -64,6 +75,12 @@ public class ChangeScene : MonoBehaviour
     {
         isBlinking = true;
         
+        // 点滅開始音を再生
+        if (playBlinkStartSound && blinkStartSound != null)
+        {
+            PlayBlinkStartSound();
+        }
+        
         while (isBlinking && !isFadingOut)
         {
             // アルファ値をsin波で変化させてゆっくり点滅
@@ -81,6 +98,12 @@ public class ChangeScene : MonoBehaviour
     {
         isFadingOut = true;
         isBlinking = false; // 常時点滅を停止
+        
+        // フェードアウト開始音を再生
+        if (playFadeOutSound && fadeOutSound != null)
+        {
+            PlayFadeOutSound();
+        }
         
         if (blinkingText != null)
         {
@@ -182,5 +205,63 @@ public class ChangeScene : MonoBehaviour
             return autoChangeDelay;
         }
         return 0f;
+    }
+    
+    // AudioSourceの設定
+    private void SetupAudioSource()
+    {
+        if (audioSource == null)
+        {
+            // AudioSourceが設定されていない場合は、このオブジェクトに追加
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+        }
+        
+        if (audioSource != null)
+        {
+            audioSource.volume = volume;
+        }
+    }
+    
+    // 点滅開始音を再生
+    private void PlayBlinkStartSound()
+    {
+        if (audioSource != null && blinkStartSound != null)
+        {
+            audioSource.PlayOneShot(blinkStartSound, volume);
+            Debug.Log($"点滅開始音を再生: {blinkStartSound.name}");
+        }
+        else
+        {
+            Debug.LogWarning($"点滅開始音の再生に失敗: AudioSourceまたはBlinkStartSoundが設定されていません");
+        }
+    }
+    
+    // フェードアウト音を再生
+    private void PlayFadeOutSound()
+    {
+        if (audioSource != null && fadeOutSound != null)
+        {
+            audioSource.PlayOneShot(fadeOutSound, volume);
+            Debug.Log($"フェードアウト音を再生: {fadeOutSound.name}");
+        }
+        else
+        {
+            Debug.LogWarning($"フェードアウト音の再生に失敗: AudioSourceまたはFadeOutSoundが設定されていません");
+        }
+    }
+    
+    // デバッグ用：Inspectorでボタンから手動で点滅開始音を再生
+    [ContextMenu("Play Blink Start Sound")]
+    public void ManualPlayBlinkStartSound()
+    {
+        PlayBlinkStartSound();
+    }
+    
+    // デバッグ用：Inspectorでボタンから手動でフェードアウト音を再生
+    [ContextMenu("Play Fade Out Sound")]
+    public void ManualPlayFadeOutSound()
+    {
+        PlayFadeOutSound();
     }
 }

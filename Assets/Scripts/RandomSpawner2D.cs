@@ -31,6 +31,13 @@ public class RandomSpawner2D : MonoBehaviour
 	[Header("実行")]
 	[Tooltip("Start で自動開始")] public bool autoStart = false;
 	[Tooltip("アクティブになってから実行するまでの遅延時間（秒）")] public float startDelay = 0f;
+	
+	[Header("音声設定")]
+	[Tooltip("生成中からシーン遷移まで再生する音声")] public AudioClip spawnLoopSound;
+	[Tooltip("音声を再生するAudioSource")] public AudioSource audioSource;
+	[Tooltip("音量（0.0～1.0）")] public float volume = 1.0f;
+	[Tooltip("ループ音声を再生するか")] public bool playSpawnLoopSound = true;
+	[Tooltip("シーン遷移時に音声を停止するか")] public bool stopSoundOnSceneChange = true;
 
 	[Header("生成完了後の処理")]
 	[Tooltip("生成完了後にオブジェクトを削除するか")] public bool destroyAfterSpawn = false;
@@ -44,6 +51,9 @@ public class RandomSpawner2D : MonoBehaviour
 	
 	// 生成されたオブジェクトを追跡するためのリスト
 	private System.Collections.Generic.List<GameObject> spawnedObjects = new System.Collections.Generic.List<GameObject>();
+	
+	// 音声制御用の変数
+	private bool isSoundPlaying = false; // 音声が再生中かどうか
 
 	void Awake()
 	{
@@ -55,6 +65,9 @@ public class RandomSpawner2D : MonoBehaviour
 
 	void Start()
 	{
+		// AudioSourceの設定
+		SetupAudioSource();
+		
 		if (autoStart)
 		{
 			if (startDelay > 0f)
@@ -89,6 +102,9 @@ public class RandomSpawner2D : MonoBehaviour
 
 		StopAllCoroutines();
 		spawnedObjects.Clear(); // 生成リストをクリア
+		
+		// ループ音声を開始
+		StartSpawnLoopSound();
 		
 		bool canUseCoroutine = Application.isPlaying && delayBetweenSpawns > 0f;
 		if (canUseCoroutine)
@@ -228,6 +244,12 @@ public class RandomSpawner2D : MonoBehaviour
 			Debug.Log($"RandomSpawner2D: {changeSceneDelay}秒後にシーン遷移します");
 			yield return new WaitForSeconds(changeSceneDelay);
 			
+			// シーン遷移時に音声を停止
+			if (stopSoundOnSceneChange)
+			{
+				StopSpawnLoopSound();
+			}
+			
 			if (!string.IsNullOrEmpty(targetSceneName))
 			{
 				Debug.Log($"RandomSpawner2D: シーン遷移します: {targetSceneName}");
@@ -306,6 +328,68 @@ public class RandomSpawner2D : MonoBehaviour
 	{
 		return spawnedObjects.Count;
 	}
+	
+	// AudioSourceの設定
+	private void SetupAudioSource()
+	{
+		if (audioSource == null)
+		{
+			// AudioSourceが設定されていない場合は、このオブジェクトに追加
+			audioSource = gameObject.AddComponent<AudioSource>();
+			audioSource.playOnAwake = false;
+		}
+		
+		if (audioSource != null)
+		{
+			audioSource.volume = volume;
+		}
+	}
+	
+	// ループ音声を開始
+	private void StartSpawnLoopSound()
+	{
+		if (playSpawnLoopSound && spawnLoopSound != null && audioSource != null)
+		{
+			audioSource.clip = spawnLoopSound;
+			audioSource.loop = true;
+			audioSource.Play();
+			isSoundPlaying = true;
+			Debug.Log($"RandomSpawner2D: ループ音声を開始しました: {spawnLoopSound.name}");
+		}
+		else
+		{
+			Debug.LogWarning("RandomSpawner2D: ループ音声の開始に失敗: AudioSourceまたはSpawnLoopSoundが設定されていません");
+		}
+	}
+	
+	// ループ音声を停止
+	private void StopSpawnLoopSound()
+	{
+		if (audioSource != null && isSoundPlaying)
+		{
+			audioSource.Stop();
+			isSoundPlaying = false;
+			Debug.Log("RandomSpawner2D: ループ音声を停止しました");
+		}
+	}
+	
+	// デバッグ用：Inspectorでボタンから手動でループ音声を開始
+	[ContextMenu("Start Loop Sound")]
+	public void ManualStartLoopSound()
+	{
+		StartSpawnLoopSound();
+	}
+	
+	// デバッグ用：Inspectorでボタンから手動でループ音声を停止
+	[ContextMenu("Stop Loop Sound")]
+	public void ManualStopLoopSound()
+	{
+		StopSpawnLoopSound();
+	}
+	
+	// 音声が再生中かどうかを取得（外部からアクセス可能）
+	public bool IsSoundPlaying()
+	{
+		return isSoundPlaying;
+	}
 }
-
-
