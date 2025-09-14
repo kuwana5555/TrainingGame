@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 指定したプレファブを、指定範囲内にランダム位置で連続生成する 2D 用スクリプト。
@@ -29,8 +30,20 @@ public class RandomSpawner2D : MonoBehaviour
 
 	[Header("実行")]
 	[Tooltip("Start で自動開始")] public bool autoStart = false;
+	[Tooltip("アクティブになってから実行するまでの遅延時間（秒）")] public float startDelay = 0f;
+
+	[Header("生成完了後の処理")]
+	[Tooltip("生成完了後にオブジェクトを削除するか")] public bool destroyAfterSpawn = false;
+	[Tooltip("生成完了から削除までの遅延時間（秒）")] public float destroyDelay = 5f;
+	[Tooltip("生成完了後にシーン遷移するか")] public bool changeSceneAfterSpawn = false;
+	[Tooltip("遷移先のシーン名")] public string targetSceneName = "";
+	[Tooltip("シーン遷移までの遅延時間（秒）")] public float changeSceneDelay = 2f;
+	[Tooltip("生成完了後にアクティブにするオブジェクト")] public GameObject[] objectsToActivate;
 
 	BoxCollider2D _boxArea;
+	
+	// 生成されたオブジェクトを追跡するためのリスト
+	private System.Collections.Generic.List<GameObject> spawnedObjects = new System.Collections.Generic.List<GameObject>();
 
 	void Awake()
 	{
@@ -44,8 +57,22 @@ public class RandomSpawner2D : MonoBehaviour
 	{
 		if (autoStart)
 		{
-			StartSpawn();
+			if (startDelay > 0f)
+			{
+				StartCoroutine(DelayedStart());
+			}
+			else
+			{
+				StartSpawn();
+			}
 		}
+	}
+	
+	IEnumerator DelayedStart()
+	{
+		Debug.Log($"RandomSpawner2D: {startDelay}秒後に生成を開始します");
+		yield return new WaitForSeconds(startDelay);
+		StartSpawn();
 	}
 
 	/// <summary>
@@ -61,6 +88,8 @@ public class RandomSpawner2D : MonoBehaviour
 		}
 
 		StopAllCoroutines();
+		spawnedObjects.Clear(); // 生成リストをクリア
+		
 		bool canUseCoroutine = Application.isPlaying && delayBetweenSpawns > 0f;
 		if (canUseCoroutine)
 		{
@@ -82,12 +111,19 @@ public class RandomSpawner2D : MonoBehaviour
 			Quaternion rotation = GetRandomRotation2D();
 			GameObject instance = Instantiate(prefab, position, rotation, parentForSpawn);
 			ApplyRandomUniformScale(instance.transform);
+			
+			// 生成されたオブジェクトをリストに追加
+			spawnedObjects.Add(instance);
 
 			if (delayBetweenSpawns > 0f)
 			{
 				yield return new WaitForSeconds(delayBetweenSpawns);
 			}
 		}
+		
+		// 生成完了後の処理
+		Debug.Log($"RandomSpawner2D: {spawnCount}個のオブジェクト生成完了");
+		yield return StartCoroutine(OnSpawnComplete());
 	}
 
 	/// <summary>
@@ -102,6 +138,16 @@ public class RandomSpawner2D : MonoBehaviour
 			Quaternion rotation = GetRandomRotation2D();
 			GameObject instance = Instantiate(prefab, position, rotation, parentForSpawn);
 			ApplyRandomUniformScale(instance.transform);
+			
+			// 生成されたオブジェクトをリストに追加
+			spawnedObjects.Add(instance);
+		}
+		
+		// 生成完了後の処理（コルーチンで実行）
+		Debug.Log($"RandomSpawner2D: {spawnCount}個のオブジェクト生成完了");
+		if (Application.isPlaying)
+		{
+			StartCoroutine(OnSpawnComplete());
 		}
 	}
 
@@ -140,6 +186,59 @@ public class RandomSpawner2D : MonoBehaviour
 		float s = Random.Range(min, max);
 		target.localScale = new Vector3(s, s, target.localScale.z);
 	}
+	
+	/// <summary>
+	/// 生成完了後の処理を実行します。
+	/// </summary>
+	IEnumerator OnSpawnComplete()
+	{
+		// オブジェクトをアクティブ化
+		if (objectsToActivate != null && objectsToActivate.Length > 0)
+		{
+			foreach (GameObject obj in objectsToActivate)
+			{
+				if (obj != null)
+				{
+					obj.SetActive(true);
+					Debug.Log($"RandomSpawner2D: {obj.name} をアクティブにしました");
+				}
+			}
+		}
+		
+		// 削除処理
+		if (destroyAfterSpawn)
+		{
+			Debug.Log($"RandomSpawner2D: {destroyDelay}秒後に生成オブジェクトを削除します");
+			yield return new WaitForSeconds(destroyDelay);
+			
+			foreach (GameObject obj in spawnedObjects)
+			{
+				if (obj != null)
+				{
+					Destroy(obj);
+				}
+			}
+			spawnedObjects.Clear();
+			Debug.Log("RandomSpawner2D: 生成オブジェクトを削除しました");
+		}
+		
+		// シーン遷移処理
+		if (changeSceneAfterSpawn)
+		{
+			Debug.Log($"RandomSpawner2D: {changeSceneDelay}秒後にシーン遷移します");
+			yield return new WaitForSeconds(changeSceneDelay);
+			
+			if (!string.IsNullOrEmpty(targetSceneName))
+			{
+				Debug.Log($"RandomSpawner2D: シーン遷移します: {targetSceneName}");
+				SceneManager.LoadScene(targetSceneName);
+			}
+			else
+			{
+				Debug.LogWarning("RandomSpawner2D: 遷移先のシーン名が設定されていません");
+			}
+		}
+	}
 
 	void OnDrawGizmosSelected()
 	{
@@ -165,6 +264,47 @@ public class RandomSpawner2D : MonoBehaviour
 			Gizmos.color = new Color(0.2f, 0.8f, 1f, 0.9f);
 			Gizmos.DrawWireCube(center, size);
 		}
+	}
+	
+	/// <summary>
+	/// 生成されたオブジェクトを手動で削除します（デバッグ用）。
+	/// </summary>
+	[ContextMenu("Destroy Spawned Objects")]
+	public void DestroySpawnedObjects()
+	{
+		foreach (GameObject obj in spawnedObjects)
+		{
+			if (obj != null)
+			{
+				Destroy(obj);
+			}
+		}
+		spawnedObjects.Clear();
+		Debug.Log("RandomSpawner2D: 生成オブジェクトを手動削除しました");
+	}
+	
+	/// <summary>
+	/// 生成完了後の処理を手動で実行します（デバッグ用）。
+	/// </summary>
+	[ContextMenu("Execute On Spawn Complete")]
+	public void ExecuteOnSpawnComplete()
+	{
+		if (Application.isPlaying)
+		{
+			StartCoroutine(OnSpawnComplete());
+		}
+		else
+		{
+			Debug.LogWarning("RandomSpawner2D: 実行時のみ使用可能です");
+		}
+	}
+	
+	/// <summary>
+	/// 現在の生成オブジェクト数を取得します。
+	/// </summary>
+	public int GetSpawnedObjectCount()
+	{
+		return spawnedObjects.Count;
 	}
 }
 

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2547549070452393884}
   - component: {fileID: -3280552094520570677}
   - component: {fileID: 1885757092133869062}
+  - component: {fileID: 7586150289591582405}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -142,6 +143,14 @@ MonoBehaviour:
   goalAnime: PlayerGoal
   deadAnime: PlayerOver
   score: 0
+  respawnDelay: 2
+  useCheckPoint: 1
+  respawnPosition: {x: 0, y: 0, z: 0}
+  useCameraControl: 1
+  useFadeEffect: 1
+  fadeOutTime: 1
+  fadeInTime: 1
+  cameraFollowDelay: 0.5
   JumpSE: {fileID: 8300000, guid: b716bce4a15d5bf479d3f163e265c295, type: 3}
   ItemGetSE: {fileID: 8300000, guid: 7caa07a76288c614788465b8d259b218, type: 3}
   MiddleSE: {fileID: 8300000, guid: 2f0d1fa6943136a459700d7e8452ddda, type: 3}
@@ -320,6 +329,21 @@ MonoBehaviour:
   useGravity: 0
   grabbableIconTag: GrabbableIcon
   hideIconOnGrab: 1
+--- !u!114 &7586150289591582405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451426258700212465}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd253a2cb381734e8f326567e976ea4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  platformTag: Ground
+  showDebugInfo: 0
+  checkForMovingPlatform: 1
 --- !u!1 &5873858135846717628
 GameObject:
   m_ObjectHideFlags: 0

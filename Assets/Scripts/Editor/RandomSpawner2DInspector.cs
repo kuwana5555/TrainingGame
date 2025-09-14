@@ -14,6 +14,13 @@ public class RandomSpawner2DInspector : Editor
 	SerializedProperty randomRotationZ;
 	SerializedProperty randomUniformScaleMinMax;
 	SerializedProperty autoStart;
+	SerializedProperty startDelay;
+	SerializedProperty destroyAfterSpawn;
+	SerializedProperty destroyDelay;
+	SerializedProperty changeSceneAfterSpawn;
+	SerializedProperty targetSceneName;
+	SerializedProperty changeSceneDelay;
+	SerializedProperty objectsToActivate;
 
 	void OnEnable()
 	{
@@ -27,6 +34,13 @@ public class RandomSpawner2DInspector : Editor
 		randomRotationZ = serializedObject.FindProperty("randomRotationZ");
 		randomUniformScaleMinMax = serializedObject.FindProperty("randomUniformScaleMinMax");
 		autoStart = serializedObject.FindProperty("autoStart");
+		startDelay = serializedObject.FindProperty("startDelay");
+		destroyAfterSpawn = serializedObject.FindProperty("destroyAfterSpawn");
+		destroyDelay = serializedObject.FindProperty("destroyDelay");
+		changeSceneAfterSpawn = serializedObject.FindProperty("changeSceneAfterSpawn");
+		targetSceneName = serializedObject.FindProperty("targetSceneName");
+		changeSceneDelay = serializedObject.FindProperty("changeSceneDelay");
+		objectsToActivate = serializedObject.FindProperty("objectsToActivate");
 	}
 
 	public override void OnInspectorGUI()
@@ -53,7 +67,24 @@ public class RandomSpawner2DInspector : Editor
 		EditorGUILayout.PropertyField(randomUniformScaleMinMax);
 
 		EditorGUILayout.Space();
+		EditorGUILayout.LabelField("実行", EditorStyles.boldLabel);
 		EditorGUILayout.PropertyField(autoStart);
+		EditorGUILayout.PropertyField(startDelay);
+
+		EditorGUILayout.Space();
+		EditorGUILayout.LabelField("生成完了後の処理", EditorStyles.boldLabel);
+		EditorGUILayout.PropertyField(destroyAfterSpawn);
+		using (new EditorGUI.DisabledScope(!destroyAfterSpawn.boolValue))
+		{
+			EditorGUILayout.PropertyField(destroyDelay);
+		}
+		EditorGUILayout.PropertyField(changeSceneAfterSpawn);
+		using (new EditorGUI.DisabledScope(!changeSceneAfterSpawn.boolValue))
+		{
+			EditorGUILayout.PropertyField(targetSceneName);
+			EditorGUILayout.PropertyField(changeSceneDelay);
+		}
+		EditorGUILayout.PropertyField(objectsToActivate, true);
 
 		serializedObject.ApplyModifiedProperties();
 
@@ -71,6 +102,24 @@ public class RandomSpawner2DInspector : Editor
 					EditorUtility.SetDirty(spawner.gameObject);
 				}
 			}
+		}
+
+		EditorGUILayout.Space();
+		EditorGUILayout.LabelField("デバッグ", EditorStyles.boldLabel);
+		using (new EditorGUI.DisabledScope(spawner == null))
+		{
+			EditorGUILayout.BeginHorizontal();
+			if (GUILayout.Button("Destroy Spawned"))
+			{
+				spawner.DestroySpawnedObjects();
+			}
+			if (GUILayout.Button("Execute On Complete"))
+			{
+				spawner.ExecuteOnSpawnComplete();
+			}
+			EditorGUILayout.EndHorizontal();
+			
+			EditorGUILayout.LabelField($"生成済みオブジェクト数: {spawner.GetSpawnedObjectCount()}");
 		}
 	}
 }

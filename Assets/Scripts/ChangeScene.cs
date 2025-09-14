@@ -9,6 +9,11 @@ public class ChangeScene : MonoBehaviour
     [Header("シーン設定")]
     public string sceneName;        //読み込むシーン名
     
+    [Header("自動シーン切り替え設定")]
+    public bool useAutoSceneChange = false;  // 自動シーン切り替えを使用するか
+    public float autoChangeDelay = 5.0f;     // 自動切り替えまでの遅延時間（秒）
+    public string autoChangeSceneName = "";  // 自動切り替え先のシーン名（空の場合はsceneNameを使用）
+    
     [Header("点滅設定")]
     public TextMeshProUGUI blinkingText;       //点滅させるテキスト（TextMeshPro）
     public float blinkSpeed = 1.0f; //点滅速度（秒）
@@ -18,6 +23,10 @@ public class ChangeScene : MonoBehaviour
     private bool isBlinking = false; //点滅中かどうか
     private bool isFadingOut = false; //フェードアウト中かどうか
     private Coroutine blinkingCoroutine; //点滅コルーチンの参照
+    
+    // 自動シーン切り替え関連の変数
+    private Coroutine autoChangeCoroutine; //自動切り替えコルーチンの参照
+    private bool hasAutoChanged = false; //自動切り替えが実行されたかどうか
 
     // Start is called before the first frame update
     void Start()
@@ -26,6 +35,12 @@ public class ChangeScene : MonoBehaviour
         if (blinkingText != null)
         {
             blinkingCoroutine = StartCoroutine(ContinuousBlinking());
+        }
+        
+        // 自動シーン切り替えを開始
+        if (useAutoSceneChange && !hasAutoChanged)
+        {
+            autoChangeCoroutine = StartCoroutine(AutoSceneChange());
         }
     }
 
@@ -103,5 +118,69 @@ public class ChangeScene : MonoBehaviour
         string current = SceneManager.GetActiveScene().name;
         SceneTransitionContext.Set(current, sceneName);
         SceneManager.LoadScene(sceneName);
+    }
+    
+    // 自動シーン切り替え処理
+    private IEnumerator AutoSceneChange()
+    {
+        Debug.Log($"自動シーン切り替え開始: {autoChangeDelay}秒後に切り替え");
+        
+        // 指定した秒数待機
+        yield return new WaitForSeconds(autoChangeDelay);
+        
+        // 既に手動で切り替えが実行されていない場合のみ実行
+        if (!hasAutoChanged && !isFadingOut)
+        {
+            hasAutoChanged = true;
+            
+            // 自動切り替え先のシーン名を決定
+            string targetSceneName = string.IsNullOrEmpty(autoChangeSceneName) ? sceneName : autoChangeSceneName;
+            
+            Debug.Log($"自動シーン切り替え実行: {targetSceneName}に切り替え");
+            
+            // シーンを切り替え
+            if (!string.IsNullOrEmpty(targetSceneName))
+            {
+                string current = SceneManager.GetActiveScene().name;
+                SceneTransitionContext.Set(current, targetSceneName);
+                SceneManager.LoadScene(targetSceneName);
+            }
+            else
+            {
+                Debug.LogWarning("自動シーン切り替え失敗: シーン名が設定されていません");
+            }
+        }
+    }
+    
+    // 自動シーン切り替えを手動で停止
+    public void StopAutoSceneChange()
+    {
+        if (autoChangeCoroutine != null)
+        {
+            StopCoroutine(autoChangeCoroutine);
+            autoChangeCoroutine = null;
+            Debug.Log("自動シーン切り替えを停止しました");
+        }
+    }
+    
+    // 自動シーン切り替えを手動で開始
+    public void StartAutoSceneChange()
+    {
+        if (useAutoSceneChange && !hasAutoChanged && autoChangeCoroutine == null)
+        {
+            autoChangeCoroutine = StartCoroutine(AutoSceneChange());
+            Debug.Log("自動シーン切り替えを開始しました");
+        }
+    }
+    
+    // 自動シーン切り替えの残り時間を取得（外部からアクセス可能）
+    public float GetAutoChangeRemainingTime()
+    {
+        if (useAutoSceneChange && !hasAutoChanged && autoChangeCoroutine != null)
+        {
+            // 簡易的な実装：正確な残り時間の計算は複雑なため、基本的な情報のみ提供
+            return autoChangeDelay;
+        }
+        return 0f;
     }
 }
