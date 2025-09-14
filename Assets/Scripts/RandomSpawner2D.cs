@@ -31,13 +31,13 @@ public class RandomSpawner2D : MonoBehaviour
 	[Header("実行")]
 	[Tooltip("Start で自動開始")] public bool autoStart = false;
 	[Tooltip("アクティブになってから実行するまでの遅延時間（秒）")] public float startDelay = 0f;
-	
+
 	[Header("音声設定")]
-	[Tooltip("生成中からシーン遷移まで再生する音声")] public AudioClip spawnLoopSound;
-	[Tooltip("音声を再生するAudioSource")] public AudioSource audioSource;
-	[Tooltip("音量（0.0～1.0）")] public float volume = 1.0f;
-	[Tooltip("ループ音声を再生するか")] public bool playSpawnLoopSound = true;
-	[Tooltip("シーン遷移時に音声を停止するか")] public bool stopSoundOnSceneChange = true;
+	[Tooltip("生成中からシーン遷移まで再生する音声")] [SerializeField] private AudioClip spawnLoopSound;
+	[Tooltip("音声を再生するAudioSource")] [SerializeField] private AudioSource audioSource;
+	[Tooltip("音量（0.0～1.0）")] [SerializeField] private float volume = 1.0f;
+	[Tooltip("ループ音声を再生するか")] [SerializeField] private bool playSpawnLoopSound = true;
+	[Tooltip("シーン遷移時に音声を停止するか")] [SerializeField] private bool stopSoundOnSceneChange = true;
 
 	[Header("生成完了後の処理")]
 	[Tooltip("生成完了後にオブジェクトを削除するか")] public bool destroyAfterSpawn = false;

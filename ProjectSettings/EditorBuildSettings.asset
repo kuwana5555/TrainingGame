@@ -50,4 +50,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SecurityGame/Security_Stage1.unity
     guid: 5bacd174c2ea3c74fa7fa0a31d06e75f
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage1-1_Tip.unity
+    guid: 49824a3455c315241b377755275fd9d2
   m_configObjects: {}
