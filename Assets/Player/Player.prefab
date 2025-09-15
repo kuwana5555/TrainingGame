@@ -151,9 +151,26 @@ MonoBehaviour:
   fadeOutTime: 1
   fadeInTime: 1
   cameraFollowDelay: 0.5
+  dashEnabled: 0
+  dashSpeed: 6
+  dashAcceleration: 2
+  dashDeceleration: 3
+  dashKey: 304
+  requireGroundForDash: 1
+  dashTrail: {fileID: 0}
+  autoFindDashTrail: 1
+  enableKick: 1
+  kickForceMultiplier: 1
+  kickDirection: {x: 0.5, y: 1}
+  minKickForce: 5
+  maxKickForce: 15
+  kickableTag: Kickable
   JumpSE: {fileID: 8300000, guid: b716bce4a15d5bf479d3f163e265c295, type: 3}
   ItemGetSE: {fileID: 8300000, guid: 7caa07a76288c614788465b8d259b218, type: 3}
   MiddleSE: {fileID: 8300000, guid: 2f0d1fa6943136a459700d7e8452ddda, type: 3}
+  KickSE: {fileID: 0}
+  KickSEVolume: 0.6
+  kickCooldown: 0.1
 --- !u!95 &451426258700212471
 Animator:
   serializedVersion: 5
@@ -280,7 +297,7 @@ CapsuleCollider2D:
   m_GameObject: {fileID: 451426258700212465}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 6200000, guid: 44536e4dc164a4d1dab6c1ac2581aedf, type: 2}
+  m_Material: {fileID: 6200000, guid: 2017116cf461ea9499e182dbfc3427fb, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -329,6 +346,12 @@ MonoBehaviour:
   useGravity: 0
   grabbableIconTag: GrabbableIcon
   hideIconOnGrab: 1
+  audioSource: {fileID: 0}
+  grabSound: {fileID: 0}
+  releaseSound: {fileID: 0}
+  volume: 1
+  playGrabSound: 1
+  playReleaseSound: 1
 --- !u!114 &7586150289591582405
 MonoBehaviour:
   m_ObjectHideFlags: 0

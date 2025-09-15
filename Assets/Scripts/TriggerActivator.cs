@@ -62,6 +62,13 @@ public class TriggerActivator : MonoBehaviour
     [SerializeField] private bool oneTimeOnly = true;      // 1回のみ機能するか
     [SerializeField] private bool persistentInScene = true; // シーン内で継続するか
     
+    [Header("消去設定")]
+    [SerializeField] private bool destroyOnContact = false; // 特定タグ接触時に相手を消去するか（デフォルト: false）
+    [SerializeField] private string destroyTargetTag = "";  // 消去対象のタグ
+    [SerializeField] private bool playDestroySound = true;  // 消去時にSEを鳴らすか
+    [SerializeField] private AudioClip destroySound;         // 消去専用SE
+    [SerializeField] private float destroySoundVolume = 1.0f; // 消去SEの音量
+
     [Header("プレイヤー制御設定")]
     [SerializeField] private bool controlPlayerDash = false; // プレイヤーのダッシュ機能を制御するか
     [SerializeField] private bool enableDashOnEnter = false; // 入った時にダッシュを有効にするか
@@ -162,6 +169,20 @@ public class TriggerActivator : MonoBehaviour
     // トリガーに入った時の処理
     void OnTriggerEnter2D(Collider2D other)
     {
+        // 接触相手の消去（必要なら最優先で実行して以降の処理を停止）
+        if (destroyOnContact && !string.IsNullOrEmpty(destroyTargetTag) && other.CompareTag(destroyTargetTag))
+        {
+            // 消去SE（OneShot）
+            if (playDestroySound && audioSource != null && destroySound != null)
+            {
+                audioSource.PlayOneShot(destroySound, destroySoundVolume);
+            }
+            
+            Debug.Log($"DestroyOnContact: {other.name} を削除しました（タグ: {destroyTargetTag}）");
+            Destroy(other.gameObject);
+            return;
+        }
+
         // 複数接触検知を使用する場合
         if (useMultiTrigger)
         {
@@ -227,6 +248,20 @@ public class TriggerActivator : MonoBehaviour
     // 複数接触処理（入った時）
     private void HandleMultiTriggerEnter(Collider2D other)
     {
+        // 接触相手の消去（必要なら優先処理）
+        if (destroyOnContact && !string.IsNullOrEmpty(destroyTargetTag) && other.CompareTag(destroyTargetTag))
+        {
+            // 消去SE（OneShot）
+            if (playDestroySound && audioSource != null && destroySound != null)
+            {
+                audioSource.PlayOneShot(destroySound, destroySoundVolume);
+            }
+            
+            Debug.Log($"DestroyOnContact(MultiEnter): {other.name} を削除しました（タグ: {destroyTargetTag}）");
+            Destroy(other.gameObject);
+            return;
+        }
+
         // アイテム運搬システムを使用する場合
         if (useItemCarrySystem)
         {
@@ -284,6 +319,20 @@ public class TriggerActivator : MonoBehaviour
     // アイテム運搬処理（入った時）
     private void HandleItemCarryEnter(Collider2D other)
     {
+        // 接触相手の消去（必要なら優先処理）
+        if (destroyOnContact && !string.IsNullOrEmpty(destroyTargetTag) && other.CompareTag(destroyTargetTag))
+        {
+            // 消去SE（OneShot）
+            if (playDestroySound && audioSource != null && destroySound != null)
+            {
+                audioSource.PlayOneShot(destroySound, destroySoundVolume);
+            }
+            
+            Debug.Log($"DestroyOnContact(ItemEnter): {other.name} を削除しました（タグ: {destroyTargetTag}）");
+            Destroy(other.gameObject);
+            return;
+        }
+
         // Grabbableタグのチェック
         if (!other.CompareTag(grabbableTag))
         {

@@ -59,4 +59,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SecurityGame/Security_Stage1-3_Tip.unity
     guid: 3f0a5d26ab5c93648aaa4347d25a5e80
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage2-0_Dash_Kick.unity
+    guid: c90d9f0d34a79474b95cf6412743185b
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage2.unity
+    guid: 7f190cc449987f74fbc038e2ebde6fcb
   m_configObjects: {}

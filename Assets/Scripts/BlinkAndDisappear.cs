@@ -499,3 +499,4 @@ public class BlinkAndDisappear : MonoBehaviour
         return "待機中";
     }
 }
+
