@@ -49,6 +49,7 @@ public class DialogueDisplay : MonoBehaviour
     private bool isCompleted = false;        // 完了したかどうか
     private Coroutine displayCoroutine;      // 表示コルーチンの参照
     private Coroutine cursorCoroutine;       // カーソルコルーチンの参照
+    private Coroutine typeSoundCoroutine;    // タイプ音コルーチンの参照
     
     // イベント
     public System.Action OnDialogueStart;    // セリフ開始時
@@ -126,6 +127,16 @@ public class DialogueDisplay : MonoBehaviour
         }
         displayCoroutine = StartCoroutine(DisplayText());
         
+        // タイプ音を開始
+        if (typeSound != null && audioSource != null)
+        {
+            if (typeSoundCoroutine != null)
+            {
+                StopCoroutine(typeSoundCoroutine);
+            }
+            typeSoundCoroutine = StartCoroutine(PlayTypeSound());
+        }
+        
         // カーソル表示
         if (showCursor && useTypewriterEffect)
         {
@@ -166,11 +177,6 @@ public class DialogueDisplay : MonoBehaviour
                 Debug.Log($"文字表示: '{currentText}' (進捗: {currentIndex}/{fullText.Length})");
             }
             
-            // タイプ音を再生
-            if (typeSound != null && audioSource != null)
-            {
-                audioSource.PlayOneShot(typeSound, volume);
-            }
             
             // 間隔を待機
             if (useTypewriterEffect)
@@ -234,6 +240,19 @@ public class DialogueDisplay : MonoBehaviour
     {
         isDisplaying = false;
         isCompleted = true;
+        
+        // タイプ音を停止
+        if (typeSoundCoroutine != null)
+        {
+            StopCoroutine(typeSoundCoroutine);
+            typeSoundCoroutine = null;
+        }
+        
+        // タイプ音の再生を強制的に停止
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+        }
         
         // カーソルを非表示
         if (showCursor && dialogueText != null)
@@ -333,6 +352,16 @@ public class DialogueDisplay : MonoBehaviour
         {
             StopCoroutine(cursorCoroutine);
         }
+        if (typeSoundCoroutine != null)
+        {
+            StopCoroutine(typeSoundCoroutine);
+        }
+        
+        // タイプ音の再生を停止
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+        }
         
         isDisplaying = false;
         isPaused = false;
@@ -411,5 +440,33 @@ public class DialogueDisplay : MonoBehaviour
     public void ManualTestJapaneseText()
     {
         TestJapaneseText();
+    }
+    
+    // タイプ音を連続再生するコルーチン
+    private IEnumerator PlayTypeSound()
+    {
+        while (isDisplaying && !isCompleted)
+        {
+            // タイプ音を再生
+            if (typeSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(typeSound, volume);
+                
+                // 音の長さ分待機
+                yield return new WaitForSeconds(typeSound.length);
+                
+                // 表示がまだ続いている場合は再度再生
+                if (isDisplaying && !isCompleted)
+                {
+                    // 音が終わったが表示が続いている場合、再度再生
+                    continue;
+                }
+            }
+            else
+            {
+                // タイプ音が設定されていない場合は待機
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
     }
 }
