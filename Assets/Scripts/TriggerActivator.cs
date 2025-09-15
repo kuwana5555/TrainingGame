@@ -62,6 +62,15 @@ public class TriggerActivator : MonoBehaviour
     [SerializeField] private bool oneTimeOnly = true;      // 1回のみ機能するか
     [SerializeField] private bool persistentInScene = true; // シーン内で継続するか
     
+    [Header("プレイヤー制御設定")]
+    [SerializeField] private bool controlPlayerDash = false; // プレイヤーのダッシュ機能を制御するか
+    [SerializeField] private bool enableDashOnEnter = false; // 入った時にダッシュを有効にするか
+    [SerializeField] private bool disableDashOnEnter = false; // 入った時にダッシュを無効にするか
+    [SerializeField] private bool enableDashOnExit = false; // 出た時にダッシュを有効にするか
+    [SerializeField] private bool disableDashOnExit = false; // 出た時にダッシュを無効にするか
+    [SerializeField] private bool persistDashState = true; // ダッシュ状態をシーン間で維持するか
+    [SerializeField] private string dashStateKey = "PlayerDashEnabled"; // ダッシュ状態の保存キー
+    
     [Header("タイマー設定")]
     [SerializeField] private bool useTimerTrigger = false;  // タイマートリガーを使用するか
     [SerializeField] private float triggerDuration = 2.0f;  // トリガーが発動するまでの時間（秒）
@@ -106,6 +115,12 @@ public class TriggerActivator : MonoBehaviour
         
         // AudioSourceの設定
         SetupAudioSource();
+        
+        // ダッシュ状態を復元
+        if (controlPlayerDash && persistDashState)
+        {
+            RestoreDashState();
+        }
     }
 
     // Update is called once per frame
@@ -185,6 +200,12 @@ public class TriggerActivator : MonoBehaviour
                 }
             }
             
+            // プレイヤーのダッシュ機能を制御
+            if (controlPlayerDash)
+            {
+                ControlPlayerDash(true);
+            }
+            
             // タイマートリガーが無効な場合の即座の処理
             if (!useTimerTrigger)
             {
@@ -238,6 +259,12 @@ public class TriggerActivator : MonoBehaviour
             }
         }
         
+        // プレイヤーのダッシュ機能を制御
+        if (controlPlayerDash)
+        {
+            ControlPlayerDash(true);
+        }
+        
         // 接触リストに追加
         activeColliders.Add(other);
         currentCount = activeColliders.Count;
@@ -280,6 +307,12 @@ public class TriggerActivator : MonoBehaviour
             {
                 PlayAudio();
             }
+        }
+        
+        // プレイヤーのダッシュ機能を制御
+        if (controlPlayerDash)
+        {
+            ControlPlayerDash(true);
         }
         
         // 接触リストに追加
@@ -575,6 +608,12 @@ public class TriggerActivator : MonoBehaviour
                     PlayAudio();
                 }
             }
+            
+            // プレイヤーのダッシュ機能を制御
+            if (controlPlayerDash)
+            {
+                ControlPlayerDash(false);
+            }
         }
     }
     
@@ -682,6 +721,12 @@ public class TriggerActivator : MonoBehaviour
                 PlayAudio();
             }
         }
+        
+        // プレイヤーのダッシュ機能を制御
+        if (controlPlayerDash)
+        {
+            ControlPlayerDash(false);
+        }
     }
     
     // アイテム運搬トリガーを非アクティブ化
@@ -708,6 +753,12 @@ public class TriggerActivator : MonoBehaviour
             {
                 PlayAudio();
             }
+        }
+        
+        // プレイヤーのダッシュ機能を制御
+        if (controlPlayerDash)
+        {
+            ControlPlayerDash(false);
         }
     }
 
@@ -867,6 +918,176 @@ public class TriggerActivator : MonoBehaviour
     public void ManualPlayMultiTriggerSound()
     {
         PlayMultiTriggerSound();
+    }
+    
+    /// <summary>
+    /// プレイヤーのダッシュ機能を制御
+    /// </summary>
+    private void ControlPlayerDash(bool isEntering)
+    {
+        // プレイヤーを検索
+        PlayerController player = FindObjectOfType<PlayerController>();
+        if (player == null)
+        {
+            Debug.LogWarning($"TriggerActivator: プレイヤーが見つかりません - {gameObject.name}");
+            return;
+        }
+        
+        bool dashStateChanged = false;
+        bool newDashState = player.IsDashEnabled();
+        
+        if (isEntering)
+        {
+            // 入った時の処理
+            if (enableDashOnEnter)
+            {
+                player.SetDashEnabled(true);
+                newDashState = true;
+                dashStateChanged = true;
+                Debug.Log($"TriggerActivator: プレイヤーのダッシュを有効にしました - {gameObject.name}");
+            }
+            else if (disableDashOnEnter)
+            {
+                player.SetDashEnabled(false);
+                newDashState = false;
+                dashStateChanged = true;
+                Debug.Log($"TriggerActivator: プレイヤーのダッシュを無効にしました - {gameObject.name}");
+            }
+        }
+        else
+        {
+            // 出た時の処理
+            if (enableDashOnExit)
+            {
+                player.SetDashEnabled(true);
+                newDashState = true;
+                dashStateChanged = true;
+                Debug.Log($"TriggerActivator: プレイヤーのダッシュを有効にしました - {gameObject.name}");
+            }
+            else if (disableDashOnExit)
+            {
+                player.SetDashEnabled(false);
+                newDashState = false;
+                dashStateChanged = true;
+                Debug.Log($"TriggerActivator: プレイヤーのダッシュを無効にしました - {gameObject.name}");
+            }
+        }
+        
+        // 状態が変更された場合、永続化する
+        if (dashStateChanged && persistDashState)
+        {
+            SaveDashState(newDashState);
+        }
+    }
+    
+    /// <summary>
+    /// プレイヤーのダッシュ機能を手動で制御
+    /// </summary>
+    public void SetPlayerDashEnabled(bool enabled)
+    {
+        PlayerController player = FindObjectOfType<PlayerController>();
+        if (player != null)
+        {
+            player.SetDashEnabled(enabled);
+            Debug.Log($"TriggerActivator: プレイヤーのダッシュを{(enabled ? "有効" : "無効")}にしました - {gameObject.name}");
+            
+            // 永続化する
+            if (persistDashState)
+            {
+                SaveDashState(enabled);
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"TriggerActivator: プレイヤーが見つかりません - {gameObject.name}");
+        }
+    }
+    
+    /// <summary>
+    /// ダッシュ状態を保存
+    /// </summary>
+    private void SaveDashState(bool enabled)
+    {
+        PlayerPrefs.SetInt(dashStateKey, enabled ? 1 : 0);
+        PlayerPrefs.Save();
+        Debug.Log($"TriggerActivator: ダッシュ状態を保存しました - {(enabled ? "有効" : "無効")} (キー: {dashStateKey})");
+    }
+    
+    /// <summary>
+    /// ダッシュ状態を復元
+    /// </summary>
+    private void RestoreDashState()
+    {
+        if (PlayerPrefs.HasKey(dashStateKey))
+        {
+            bool savedDashState = PlayerPrefs.GetInt(dashStateKey, 0) == 1;
+            
+            PlayerController player = FindObjectOfType<PlayerController>();
+            if (player != null)
+            {
+                player.SetDashEnabled(savedDashState);
+                Debug.Log($"TriggerActivator: ダッシュ状態を復元しました - {(savedDashState ? "有効" : "無効")} (キー: {dashStateKey})");
+            }
+            else
+            {
+                Debug.LogWarning($"TriggerActivator: プレイヤーが見つからないため、ダッシュ状態の復元をスキップしました");
+            }
+        }
+        else
+        {
+            Debug.Log($"TriggerActivator: 保存されたダッシュ状態が見つかりません - {dashStateKey}");
+        }
+    }
+    
+    /// <summary>
+    /// ダッシュ状態をリセット（デバッグ用）
+    /// </summary>
+    public void ResetDashState()
+    {
+        PlayerPrefs.DeleteKey(dashStateKey);
+        PlayerPrefs.Save();
+        Debug.Log($"TriggerActivator: ダッシュ状態をリセットしました - {dashStateKey}");
+    }
+    
+    /// <summary>
+    /// 現在のダッシュ状態を取得
+    /// </summary>
+    public bool GetCurrentDashState()
+    {
+        if (PlayerPrefs.HasKey(dashStateKey))
+        {
+            return PlayerPrefs.GetInt(dashStateKey, 0) == 1;
+        }
+        return false;
+    }
+    
+    // デバッグ用：Inspectorでボタンからプレイヤーのダッシュを有効化
+    [ContextMenu("Enable Player Dash")]
+    public void ManualEnablePlayerDash()
+    {
+        SetPlayerDashEnabled(true);
+    }
+    
+    // デバッグ用：Inspectorでボタンからプレイヤーのダッシュを無効化
+    [ContextMenu("Disable Player Dash")]
+    public void ManualDisablePlayerDash()
+    {
+        SetPlayerDashEnabled(false);
+    }
+    
+    // デバッグ用：Inspectorでボタンからダッシュ状態をリセット
+    [ContextMenu("Reset Dash State")]
+    public void ManualResetDashState()
+    {
+        ResetDashState();
+    }
+    
+    // デバッグ用：Inspectorでボタンから現在のダッシュ状態を表示
+    [ContextMenu("Show Current Dash State")]
+    public void ManualShowCurrentDashState()
+    {
+        bool currentState = GetCurrentDashState();
+        Debug.Log($"現在のダッシュ状態: {(currentState ? "有効" : "無効")} (キー: {dashStateKey})");
     }
 
     // 時間差アクティブ化を開始

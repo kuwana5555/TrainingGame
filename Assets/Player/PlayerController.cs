@@ -37,6 +37,22 @@ public class PlayerController : MonoBehaviour
     public float fadeInTime = 1.0f;          // フェードイン時間（秒）
     public float cameraFollowDelay = 0.5f;   // カメラ追従再開までの遅延（秒）
     
+    [Header("ダッシュ設定")]
+    public bool dashEnabled = false;         // ダッシュ機能が有効かどうか
+    public float dashSpeed = 6.0f;          // ダッシュ時の最大速度
+    public float dashAcceleration = 2.0f;   // ダッシュの加速速度
+    public float dashDeceleration = 3.0f;   // ダッシュの減速速度
+    public KeyCode dashKey = KeyCode.LeftShift; // ダッシュキー
+    public bool requireGroundForDash = true; // ダッシュに地面が必要か
+    
+    [Header("キック設定")]
+    public bool enableKick = true;          // キック機能が有効かどうか
+    public float kickForceMultiplier = 1.0f; // キック力の倍率
+    public Vector2 kickDirection = new Vector2(0.5f, 1.0f); // キック方向（正規化前）
+    public float minKickForce = 5.0f;       // 最小キック力
+    public float maxKickForce = 15.0f;      // 最大キック力
+    public string kickableTag = "Kickable"; // キック可能なオブジェクトのタグ
+    
     // リスポーン制御用の変数
     private bool isRespawning = false;   // リスポーン中かどうか
     private Coroutine respawnCoroutine;  // リスポーンコルーチンの参照
@@ -54,6 +70,16 @@ public class PlayerController : MonoBehaviour
     [SerializeField] AudioClip ItemGetSE;
     [Header("Player Flag Get Sound")]
     [SerializeField] AudioClip MiddleSE;
+    
+    // ダッシュ制御用の変数
+    private bool isDashing = false;         // ダッシュ中かどうか
+    private float currentDashSpeed = 0f;    // 現在のダッシュ速度
+    private bool dashKeyPressed = false;    // ダッシュキーが押されているか
+    
+    // キック制御用の変数
+    private bool canKick = false;           // キック可能かどうか
+    private float lastKickTime = 0f;        // 最後にキックした時間
+    public float kickCooldown = 0.1f;       // キックのクールダウン時間
 
     // Start is called before the first frame update
     void Start()
@@ -104,6 +130,15 @@ public class PlayerController : MonoBehaviour
         {
             Jump();
         }
+        
+        // ダッシュキーの入力処理
+        if (dashEnabled)
+        {
+            dashKeyPressed = Input.GetKey(dashKey);
+        }
+        
+        // キック可能状態の更新
+        UpdateKickAvailability();
     }
 
     void FixedUpdate()
@@ -120,8 +155,18 @@ public class PlayerController : MonoBehaviour
                                              groundLayer);          //検出するレイヤー
         if (onGround || axisH != 0)
         {
-            //速度を更新する
-            rbody.velocity = new Vector2(axisH * speed, rbody.velocity.y);
+            // ダッシュ処理
+            if (dashEnabled)
+            {
+                UpdateDashSpeed(onGround);
+                float currentSpeed = speed + currentDashSpeed;
+                rbody.velocity = new Vector2(axisH * currentSpeed, rbody.velocity.y);
+            }
+            else
+            {
+                //速度を更新する
+                rbody.velocity = new Vector2(axisH * speed, rbody.velocity.y);
+            }
         }
         if (onGround && goJump)
         {
@@ -141,7 +186,15 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                nowAnime = moveAnime;  		// 移動
+                // ダッシュ中かどうかでアニメーションを分岐
+                if (dashEnabled && isDashing)
+                {
+                    nowAnime = moveAnime;   // ダッシュ時も通常の移動アニメーション
+                }
+                else
+                {
+                    nowAnime = moveAnime;   // 移動
+                }
             }
         }
         else
@@ -190,6 +243,11 @@ public class PlayerController : MonoBehaviour
             Destroy(collision.gameObject);
             Debug.Log("CheckPoint : " + transform.position);
             AudioSource.PlayClipAtPoint(MiddleSE, Camera.main.transform.position, 0.5f);
+        }
+        else if (collision.gameObject.tag == kickableTag)
+        {
+            // キック可能なオブジェクトに触れた場合
+            TryKickObject(collision.gameObject);
         }
     }
     // ゴール
@@ -427,5 +485,210 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogWarning("ScreenFaderが設定されていません。フェードインをスキップします。");
         }
+    }
+    
+    /// <summary>
+    /// ダッシュ速度を更新
+    /// </summary>
+    void UpdateDashSpeed(bool onGround)
+    {
+        // ダッシュキーが押されているかチェック
+        bool canDash = dashKeyPressed && (!requireGroundForDash || onGround);
+        
+        if (canDash && axisH != 0)
+        {
+            // ダッシュ中
+            isDashing = true;
+            currentDashSpeed = Mathf.MoveTowards(currentDashSpeed, dashSpeed, dashAcceleration * Time.fixedDeltaTime);
+        }
+        else
+        {
+            // ダッシュ終了
+            isDashing = false;
+            currentDashSpeed = Mathf.MoveTowards(currentDashSpeed, 0f, dashDeceleration * Time.fixedDeltaTime);
+        }
+    }
+    
+    /// <summary>
+    /// ダッシュ機能を有効/無効にする
+    /// </summary>
+    public void SetDashEnabled(bool enabled)
+    {
+        dashEnabled = enabled;
+        
+        // 無効にした場合はダッシュ状態をリセット
+        if (!enabled)
+        {
+            isDashing = false;
+            currentDashSpeed = 0f;
+            dashKeyPressed = false;
+        }
+        
+        Debug.Log($"ダッシュ機能を{(enabled ? "有効" : "無効")}にしました");
+    }
+    
+    /// <summary>
+    /// ダッシュ機能が有効かどうかを取得
+    /// </summary>
+    public bool IsDashEnabled()
+    {
+        return dashEnabled;
+    }
+    
+    /// <summary>
+    /// 現在ダッシュ中かどうかを取得
+    /// </summary>
+    public bool IsDashing()
+    {
+        return isDashing;
+    }
+    
+    /// <summary>
+    /// 現在のダッシュ速度を取得
+    /// </summary>
+    public float GetCurrentDashSpeed()
+    {
+        return currentDashSpeed;
+    }
+    
+    /// <summary>
+    /// ダッシュ設定を更新
+    /// </summary>
+    public void UpdateDashSettings(float newDashSpeed, float newAcceleration, float newDeceleration)
+    {
+        dashSpeed = newDashSpeed;
+        dashAcceleration = newAcceleration;
+        dashDeceleration = newDeceleration;
+        
+        Debug.Log($"ダッシュ設定を更新しました - 速度: {dashSpeed}, 加速: {dashAcceleration}, 減速: {dashDeceleration}");
+    }
+    
+    /// <summary>
+    /// キック可能状態を更新
+    /// </summary>
+    private void UpdateKickAvailability()
+    {
+        if (!enableKick)
+        {
+            canKick = false;
+            return;
+        }
+        
+        // ダッシュ中で、クールダウンが終了している場合のみキック可能
+        canKick = isDashing && (Time.time - lastKickTime >= kickCooldown);
+    }
+    
+    /// <summary>
+    /// オブジェクトをキックする
+    /// </summary>
+    private void TryKickObject(GameObject targetObject)
+    {
+        if (!canKick)
+        {
+            return;
+        }
+        
+        // Rigidbody2Dを取得
+        Rigidbody2D targetRigidbody = targetObject.GetComponent<Rigidbody2D>();
+        if (targetRigidbody == null)
+        {
+            Debug.LogWarning($"キック対象オブジェクトにRigidbody2Dがありません: {targetObject.name}");
+            return;
+        }
+        
+        // キック実行
+        KickObject(targetRigidbody);
+        
+        // クールダウン開始
+        lastKickTime = Time.time;
+        canKick = false;
+    }
+    
+    /// <summary>
+    /// オブジェクトにキック力を加える
+    /// </summary>
+    private void KickObject(Rigidbody2D targetRigidbody)
+    {
+        // 現在のダッシュ速度に基づいてキック力を計算
+        float speedRatio = Mathf.Clamp01(currentDashSpeed / dashSpeed);
+        float kickForce = Mathf.Lerp(minKickForce, maxKickForce, speedRatio) * kickForceMultiplier;
+        
+        // キック方向を正規化
+        Vector2 normalizedKickDirection = kickDirection.normalized;
+        
+        // プレイヤーの向きに応じてキック方向を調整
+        if (transform.localScale.x < 0) // 左向きの場合
+        {
+            normalizedKickDirection.x = -normalizedKickDirection.x;
+        }
+        
+        // キック力を適用
+        Vector2 kickForceVector = normalizedKickDirection * kickForce;
+        targetRigidbody.AddForce(kickForceVector, ForceMode2D.Impulse);
+        
+        Debug.Log($"キック実行: 力={kickForce:F2}, 方向={normalizedKickDirection}, 速度比={speedRatio:F2}");
+    }
+    
+    /// <summary>
+    /// キック機能を有効/無効にする
+    /// </summary>
+    public void SetKickEnabled(bool enabled)
+    {
+        enableKick = enabled;
+        if (!enabled)
+        {
+            canKick = false;
+        }
+        Debug.Log($"キック機能を{(enabled ? "有効" : "無効")}にしました");
+    }
+    
+    /// <summary>
+    /// キック機能が有効かどうかを取得
+    /// </summary>
+    public bool IsKickEnabled()
+    {
+        return enableKick;
+    }
+    
+    /// <summary>
+    /// 現在キック可能かどうかを取得
+    /// </summary>
+    public bool CanKick()
+    {
+        return canKick;
+    }
+    
+    /// <summary>
+    /// キック設定を更新
+    /// </summary>
+    public void UpdateKickSettings(float newMinForce, float newMaxForce, Vector2 newDirection, float newMultiplier)
+    {
+        minKickForce = newMinForce;
+        maxKickForce = newMaxForce;
+        kickDirection = newDirection;
+        kickForceMultiplier = newMultiplier;
+        
+        Debug.Log($"キック設定を更新しました - 最小力: {minKickForce}, 最大力: {maxKickForce}, 方向: {kickDirection}, 倍率: {kickForceMultiplier}");
+    }
+    
+    // デバッグ用：Inspectorでボタンからキック機能を有効化
+    [ContextMenu("Enable Kick")]
+    public void ManualEnableKick()
+    {
+        SetKickEnabled(true);
+    }
+    
+    // デバッグ用：Inspectorでボタンからキック機能を無効化
+    [ContextMenu("Disable Kick")]
+    public void ManualDisableKick()
+    {
+        SetKickEnabled(false);
+    }
+    
+    // デバッグ用：Inspectorでボタンからキック状態を表示
+    [ContextMenu("Show Kick Status")]
+    public void ManualShowKickStatus()
+    {
+        Debug.Log($"キック機能: {(enableKick ? "有効" : "無効")}, キック可能: {canKick}, ダッシュ中: {isDashing}, クールダウン残り: {Mathf.Max(0, kickCooldown - (Time.time - lastKickTime)):F2}秒");
     }
 }

@@ -25,6 +25,7 @@ TagManager:
   - Grabber
   - Grabbable
   - GrabbableIcon
+  - Kickable
   layers:
   - Default
   - TransparentFX
