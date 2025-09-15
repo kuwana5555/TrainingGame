@@ -45,6 +45,10 @@ public class PlayerController : MonoBehaviour
     public KeyCode dashKey = KeyCode.LeftShift; // ダッシュキー
     public bool requireGroundForDash = true; // ダッシュに地面が必要か
     
+    [Header("ダッシュ演出")]
+    public TrailRenderer dashTrail;          // ダッシュ時のトレイル
+    public bool autoFindDashTrail = true;    // 自動検索して適用するか
+    
     [Header("キック設定")]
     public bool enableKick = true;          // キック機能が有効かどうか
     public float kickForceMultiplier = 1.0f; // キック力の倍率
@@ -70,6 +74,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] AudioClip ItemGetSE;
     [Header("Player Flag Get Sound")]
     [SerializeField] AudioClip MiddleSE;
+    [Header("Player Kick Sound")]
+    [SerializeField] AudioClip KickSE;
+    [SerializeField] float KickSEVolume = 0.6f;
     
     // ダッシュ制御用の変数
     private bool isDashing = false;         // ダッシュ中かどうか
@@ -96,6 +103,16 @@ public class PlayerController : MonoBehaviour
         if (CheckPoint != Vector3.zero)
         {
             transform.position = CheckPoint;
+        }
+
+        // ダッシュトレイルの初期化
+        if (autoFindDashTrail && dashTrail == null)
+        {
+            dashTrail = GetComponentInChildren<TrailRenderer>(true);
+        }
+        if (dashTrail != null)
+        {
+            dashTrail.emitting = false;
         }
     }
 
@@ -161,11 +178,13 @@ public class PlayerController : MonoBehaviour
                 UpdateDashSpeed(onGround);
                 float currentSpeed = speed + currentDashSpeed;
                 rbody.velocity = new Vector2(axisH * currentSpeed, rbody.velocity.y);
+                UpdateDashTrail();
             }
             else
             {
                 //速度を更新する
                 rbody.velocity = new Vector2(axisH * speed, rbody.velocity.y);
+                UpdateDashTrail();
             }
         }
         if (onGround && goJump)
@@ -552,6 +571,20 @@ public class PlayerController : MonoBehaviour
     }
     
     /// <summary>
+    /// ダッシュトレイルのemitting制御
+    /// </summary>
+    private void UpdateDashTrail()
+    {
+        if (dashTrail == null) return;
+        // ダッシュ有効かつ実際にダッシュ速度が出ている時のみ表示
+        bool shouldEmit = dashEnabled && isDashing && currentDashSpeed > 0.01f;
+        if (dashTrail.emitting != shouldEmit)
+        {
+            dashTrail.emitting = shouldEmit;
+        }
+    }
+
+    /// <summary>
     /// ダッシュ設定を更新
     /// </summary>
     public void UpdateDashSettings(float newDashSpeed, float newAcceleration, float newDeceleration)
@@ -598,6 +631,12 @@ public class PlayerController : MonoBehaviour
         
         // キック実行
         KickObject(targetRigidbody);
+
+        // キックSE再生
+        if (KickSE != null && Camera.main != null)
+        {
+            AudioSource.PlayClipAtPoint(KickSE, Camera.main.transform.position, Mathf.Clamp01(KickSEVolume));
+        }
         
         // クールダウン開始
         lastKickTime = Time.time;
