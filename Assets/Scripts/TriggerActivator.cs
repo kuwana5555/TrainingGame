@@ -43,6 +43,7 @@ public class TriggerActivator : MonoBehaviour
     [SerializeField] private bool playOnExit = false;      // 出た時に音声を再生するか
     [SerializeField] private float volume = 1.0f;          // 音量（0.0～1.0）
     [SerializeField] private bool loop = false;            // ループ再生するか
+    [SerializeField] private bool allowRepeatPlay = false; // 重複再生を許可するか（デフォルト: false）
     
     [Header("特殊音声設定")]
     [SerializeField] private AudioClip virusDetectionSound; // ウイルス検知時の音声クリップ
@@ -171,6 +172,19 @@ public class TriggerActivator : MonoBehaviour
                 return;
             }
             
+            // 音声再生（入った時）- コライダー検知時に即座に再生
+            if (playOnEnter)
+            {
+                if (allowRepeatPlay)
+                {
+                    PlayAudioAllowRepeat();
+                }
+                else if (!hasPlayedAudio)
+                {
+                    PlayAudio();
+                }
+            }
+            
             // タイマートリガーが無効な場合の即座の処理
             if (!useTimerTrigger)
             {
@@ -179,12 +193,6 @@ public class TriggerActivator : MonoBehaviour
                     SetObjectsActive(true);
                     hasTriggered = true;
                     Debug.Log($"トリガー発動: {gameObject.name} - オブジェクトをアクティブにしました");
-                }
-                
-                // 音声再生（入った時）
-                if (playOnEnter && !hasPlayedAudio)
-                {
-                    PlayAudio();
                 }
             }
             else
@@ -217,6 +225,19 @@ public class TriggerActivator : MonoBehaviour
             return;
         }
         
+        // 音声再生（入った時）- コライダー検知時に即座に再生
+        if (playOnEnter)
+        {
+            if (allowRepeatPlay)
+            {
+                PlayAudioAllowRepeat();
+            }
+            else if (!hasPlayedAudio)
+            {
+                PlayAudio();
+            }
+        }
+        
         // 接触リストに追加
         activeColliders.Add(other);
         currentCount = activeColliders.Count;
@@ -246,6 +267,19 @@ public class TriggerActivator : MonoBehaviour
         if (activeColliders.Contains(other))
         {
             return;
+        }
+        
+        // 音声再生（入った時）- コライダー検知時に即座に再生
+        if (playOnEnter)
+        {
+            if (allowRepeatPlay)
+            {
+                PlayAudioAllowRepeat();
+            }
+            else if (!hasPlayedAudio)
+            {
+                PlayAudio();
+            }
         }
         
         // 接触リストに追加
@@ -343,12 +377,6 @@ public class TriggerActivator : MonoBehaviour
             PlayMultiTriggerSound();
         }
         
-        // 通常の音声再生（入った時）
-        if (playOnEnter && !hasPlayedAudio)
-        {
-            PlayAudio();
-        }
-        
         // 時間差アクティブ化を使用する場合
         if (useDelayedActivation && activateOnEnter)
         {
@@ -394,17 +422,6 @@ public class TriggerActivator : MonoBehaviour
             PlayVirusSound();
         }
         
-        // 通常の音声再生（入った時）
-        if (playOnEnter && !hasPlayedAudio)
-        {
-            Debug.Log("音声再生を実行します");
-            PlayAudio();
-        }
-        else
-        {
-            Debug.Log($"音声再生スキップ: playOnEnter={playOnEnter}, hasPlayedAudio={hasPlayedAudio}");
-        }
-        
         Debug.Log("=== ActivateVirusObjects() 終了 ===");
     }
     
@@ -430,17 +447,6 @@ public class TriggerActivator : MonoBehaviour
         if (playMultiTriggerSound && multiTriggerSound != null)
         {
             PlayMultiTriggerSound();
-        }
-        
-        // 通常の音声再生（入った時）
-        if (playOnEnter && !hasPlayedAudio)
-        {
-            Debug.Log("音声再生を実行します");
-            PlayAudio();
-        }
-        else
-        {
-            Debug.Log($"音声再生スキップ: playOnEnter={playOnEnter}, hasPlayedAudio={hasPlayedAudio}");
         }
         
         // 時間差アクティブ化を使用する場合
@@ -560,7 +566,14 @@ public class TriggerActivator : MonoBehaviour
             // 音声再生（出た時）
             if (playOnExit)
             {
-                PlayAudio();
+                if (allowRepeatPlay)
+                {
+                    PlayAudioAllowRepeat();
+                }
+                else if (!hasPlayedAudio)
+                {
+                    PlayAudio();
+                }
             }
         }
     }
@@ -660,7 +673,14 @@ public class TriggerActivator : MonoBehaviour
         // 音声再生（出た時）
         if (playOnExit)
         {
-            PlayAudio();
+            if (allowRepeatPlay)
+            {
+                PlayAudioAllowRepeat();
+            }
+            else if (!hasPlayedAudio)
+            {
+                PlayAudio();
+            }
         }
     }
     
@@ -680,7 +700,14 @@ public class TriggerActivator : MonoBehaviour
         // 音声再生（出た時）
         if (playOnExit)
         {
-            PlayAudio();
+            if (allowRepeatPlay)
+            {
+                PlayAudioAllowRepeat();
+            }
+            else if (!hasPlayedAudio)
+            {
+                PlayAudio();
+            }
         }
     }
 
@@ -731,6 +758,20 @@ public class TriggerActivator : MonoBehaviour
             audioSource.Play();
             hasPlayedAudio = true;
             Debug.Log($"音声再生: {gameObject.name} - {audioClip.name}");
+        }
+        else
+        {
+            Debug.LogWarning($"音声再生失敗: {gameObject.name} - AudioSourceまたはAudioClipが設定されていません");
+        }
+    }
+    
+    // 音声を再生（重複再生可能）
+    private void PlayAudioAllowRepeat()
+    {
+        if (audioSource != null && audioClip != null)
+        {
+            audioSource.Play();
+            Debug.Log($"音声再生（重複可能）: {gameObject.name} - {audioClip.name}");
         }
         else
         {
@@ -1027,9 +1068,16 @@ public class TriggerActivator : MonoBehaviour
         }
         
         // 音声再生（タイマー完了時）
-        if (playOnEnter && !hasPlayedAudio)
+        if (playOnEnter)
         {
-            PlayAudio();
+            if (allowRepeatPlay)
+            {
+                PlayAudioAllowRepeat();
+            }
+            else if (!hasPlayedAudio)
+            {
+                PlayAudio();
+            }
         }
     }
     

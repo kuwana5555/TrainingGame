@@ -215,6 +215,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 534373230760329919, guid: b2ba6245e80044e4ab9202d58674d689, type: 3}
+      propertyPath: fullText
+      value: "\u4EBA\u306B\u95A2\u3059\u308B\u5BFE\u7B56\u3092\u9078\u3076\u3002\u6559\u80B2\u3084\u8A13\u7DF4\u306F\u3001\u5F93\u696D\u54E1\u306E\u884C\u52D5\u3092\u6539\u5584\u3057\u3066\u4E8B\u6545\u3084\u8AA4\u64CD\u4F5C\u3092\u9632\u3050\u300C\u4EBA\u7684\u5BFE\u7B56\u300D\u3067\u3059\u3002\u30CF\u30FC\u30C9\u306E\u8A2D\u7F6E\u3068\u306F\u533A\u5225\u3057\u307E\u3059\u3002"
+      objectReference: {fileID: 0}
     - target: {fileID: 2592292631214074338, guid: b2ba6245e80044e4ab9202d58674d689, type: 3}
       propertyPath: m_Name
       value: QuestionBoard
@@ -3010,7 +3014,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogueText: {fileID: 1223192678}
-  fullText: "Stage1-1\u306ETips"
+  fullText: "Stage1-3\u306ETips"
   displayInterval: 0.2
   autoStart: 1
   useTypewriterEffect: 1
