@@ -17512,8 +17512,6 @@ MonoBehaviour:
   playerTag: Player
   carryOtherObjects: 1
   otherTags:
-  - Enemy
-  - Item
   - Kickable
   useCollisionDetection: 1
   detectionOffset: 0.1
