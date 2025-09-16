@@ -2402,7 +2402,7 @@ MonoBehaviour:
   useKey1: 1
   useKey2: 0
   requireHold: 0
-  targetSceneName: Security_Stage1
+  targetSceneName: Security_Stage3
   transitionDelay: 0.5
   useFadeTransition: 1
   fadeTime: 1
@@ -2446,7 +2446,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: -0.6094667}

@@ -1788,6 +1788,18 @@ MonoBehaviour:
   showDelayProgress: 1
   oneTimeOnly: 1
   persistentInScene: 1
+  destroyOnContact: 0
+  destroyTargetTag: 
+  playDestroySound: 1
+  destroySound: {fileID: 0}
+  destroySoundVolume: 1
+  controlPlayerDash: 0
+  enableDashOnEnter: 0
+  disableDashOnEnter: 0
+  enableDashOnExit: 0
+  disableDashOnExit: 0
+  persistDashState: 1
+  dashStateKey: PlayerDashEnabled
   useTimerTrigger: 1
   triggerDuration: 2
   showTimerProgress: 1
@@ -4078,6 +4090,18 @@ MonoBehaviour:
   showDelayProgress: 1
   oneTimeOnly: 0
   persistentInScene: 1
+  destroyOnContact: 0
+  destroyTargetTag: 
+  playDestroySound: 1
+  destroySound: {fileID: 0}
+  destroySoundVolume: 1
+  controlPlayerDash: 0
+  enableDashOnEnter: 0
+  disableDashOnEnter: 0
+  enableDashOnExit: 0
+  disableDashOnExit: 0
+  persistDashState: 1
+  dashStateKey: PlayerDashEnabled
   useTimerTrigger: 0
   triggerDuration: 2
   showTimerProgress: 0
@@ -8691,6 +8715,18 @@ MonoBehaviour:
   showDelayProgress: 1
   oneTimeOnly: 0
   persistentInScene: 1
+  destroyOnContact: 0
+  destroyTargetTag: 
+  playDestroySound: 1
+  destroySound: {fileID: 0}
+  destroySoundVolume: 1
+  controlPlayerDash: 0
+  enableDashOnEnter: 0
+  disableDashOnEnter: 0
+  enableDashOnExit: 0
+  disableDashOnExit: 0
+  persistDashState: 1
+  dashStateKey: PlayerDashEnabled
   useTimerTrigger: 0
   triggerDuration: 2
   showTimerProgress: 0
@@ -10042,6 +10078,18 @@ MonoBehaviour:
   showDelayProgress: 1
   oneTimeOnly: 1
   persistentInScene: 1
+  destroyOnContact: 0
+  destroyTargetTag: 
+  playDestroySound: 1
+  destroySound: {fileID: 0}
+  destroySoundVolume: 1
+  controlPlayerDash: 0
+  enableDashOnEnter: 0
+  disableDashOnEnter: 0
+  enableDashOnExit: 0
+  disableDashOnExit: 0
+  persistDashState: 1
+  dashStateKey: PlayerDashEnabled
   useTimerTrigger: 1
   triggerDuration: 2
   showTimerProgress: 1
@@ -18708,6 +18756,18 @@ MonoBehaviour:
   showDelayProgress: 1
   oneTimeOnly: 0
   persistentInScene: 1
+  destroyOnContact: 0
+  destroyTargetTag: 
+  playDestroySound: 1
+  destroySound: {fileID: 0}
+  destroySoundVolume: 1
+  controlPlayerDash: 0
+  enableDashOnEnter: 0
+  disableDashOnEnter: 0
+  enableDashOnExit: 0
+  disableDashOnExit: 0
+  persistDashState: 1
+  dashStateKey: PlayerDashEnabled
   useTimerTrigger: 0
   triggerDuration: 2
   showTimerProgress: 0
@@ -18765,7 +18825,7 @@ Transform:
   m_GameObject: {fileID: 1686336644}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -54.938118, y: -1.6840591, z: -3.2643342}
+  m_LocalPosition: {x: -63.02, y: -3.45, z: -3.2643342}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -20805,6 +20865,18 @@ MonoBehaviour:
   showDelayProgress: 1
   oneTimeOnly: 1
   persistentInScene: 1
+  destroyOnContact: 0
+  destroyTargetTag: 
+  playDestroySound: 1
+  destroySound: {fileID: 0}
+  destroySoundVolume: 1
+  controlPlayerDash: 0
+  enableDashOnEnter: 0
+  disableDashOnEnter: 0
+  enableDashOnExit: 0
+  disableDashOnExit: 0
+  persistDashState: 1
+  dashStateKey: PlayerDashEnabled
   useTimerTrigger: 1
   triggerDuration: 2
   showTimerProgress: 1
