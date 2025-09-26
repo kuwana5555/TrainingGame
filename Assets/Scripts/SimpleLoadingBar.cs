@@ -27,18 +27,63 @@ public class SimpleLoadingBar : MonoBehaviour
     [SerializeField] private float barValue = 0f; // Inspectorで制御するバーの値（0-100）
     [SerializeField] private bool enableInspectorControl = true; // Inspector制御を有効にする
     
+    [Header("自動進行設定")]
+    [SerializeField] private bool autoFillOnEnable = true; // オブジェクトアクティブ時に自動進行
+    [SerializeField] private float autoFillSpeed = 50f; // 自動進行の速度（% per second）
+    [SerializeField] private bool loopAutoFill = false; // 自動進行をループするか
+    
+    [Header("完了時実行機能")]
+    [SerializeField] private bool enableCompletionActions = true; // 完了時実行機能を有効にする
+    [SerializeField] private GameObject[] objectsToDeactivate; // 非アクティブにするオブジェクト
+    [SerializeField] private GameObject[] objectsToActivate; // アクティブにするオブジェクト
+    [SerializeField] private DelayedActivation[] delayedActivations; // 遅延実行するオブジェクト
+    
+    [Header("SE設定")]
+    [SerializeField] private AudioSource audioSource; // オーディオソース
+    [SerializeField] private AudioClip activationSE; // アクティブ時のSE
+    [SerializeField] private AudioClip delayedActivationSE; // 遅延アクティブ時のSE
+    [SerializeField] private bool playSEOnActivation = true; // アクティブ時にSEを再生するか
+    [SerializeField] private bool playSEOnDelayedActivation = true; // 遅延アクティブ時にSEを再生するか
+    
     private float currentProgress = 0f; // 現在の進捗（0-1）
     private float targetProgress = 0f; // 目標進捗（0-1）
     private float smoothVelocity = 0f; // スムーズアニメーション用
     private bool isAnimating = false; // アニメーション中かどうか
     private bool isCompleted = false; // 完了したかどうか
     private Coroutine fillCoroutine; // フィルアニメーションのコルーチン
+    private Coroutine autoFillCoroutine; // 自動進行のコルーチン
     private Vector3 originalFillScale; // 元のフィルスケール
     private Vector3 originalFillPosition; // 元のフィル位置
+    private bool isAutoFilling = false; // 自動進行中かどうか
+    
+    [System.Serializable]
+    public class DelayedActivation
+    {
+        public GameObject targetObject; // 対象オブジェクト
+        public float delayTime = 1f; // 遅延時間（秒）
+        public bool isActive = true; // 有効かどうか
+        public AudioClip customSE; // カスタムSE（オプション）
+        public bool playCustomSE = false; // カスタムSEを再生するか
+    }
     
     void Start()
     {
         InitializeLoadingBar();
+    }
+    
+    void OnEnable()
+    {
+        // オブジェクトがアクティブになった時に自動進行を開始
+        if (autoFillOnEnable)
+        {
+            StartAutoFill();
+        }
+    }
+    
+    void OnDisable()
+    {
+        // オブジェクトが非アクティブになった時に自動進行を停止
+        StopAutoFill();
     }
     
     void Update()
@@ -294,6 +339,91 @@ public class SimpleLoadingBar : MonoBehaviour
             progressText.text = "完了！";
             progressText.color = Color.green;
         }
+        
+        // 完了時実行機能を実行
+        if (enableCompletionActions)
+        {
+            ExecuteCompletionActions();
+        }
+        
+        // 完了イベントを呼び出し
+        OnLoadingCompleteEvent?.Invoke();
+    }
+    
+    /// <summary>
+    /// 完了時実行機能
+    /// </summary>
+    private void ExecuteCompletionActions()
+    {
+        // 指定したオブジェクトを非アクティブにする
+        if (objectsToDeactivate != null)
+        {
+            foreach (GameObject obj in objectsToDeactivate)
+            {
+                if (obj != null)
+                {
+                    obj.SetActive(false);
+                }
+            }
+        }
+        
+        // 指定したオブジェクトをアクティブにする
+        if (objectsToActivate != null)
+        {
+            foreach (GameObject obj in objectsToActivate)
+            {
+                if (obj != null)
+                {
+                    obj.SetActive(true);
+                    
+                    // SEを再生
+                    if (playSEOnActivation && audioSource != null && activationSE != null)
+                    {
+                        audioSource.PlayOneShot(activationSE);
+                    }
+                }
+            }
+        }
+        
+        // 遅延実行するオブジェクトを開始
+        if (delayedActivations != null)
+        {
+            foreach (DelayedActivation delayedActivation in delayedActivations)
+            {
+                if (delayedActivation.isActive && delayedActivation.targetObject != null)
+                {
+                    StartCoroutine(DelayedActivationCoroutine(delayedActivation));
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 遅延実行コルーチン
+    /// </summary>
+    private IEnumerator DelayedActivationCoroutine(DelayedActivation delayedActivation)
+    {
+        yield return new WaitForSeconds(delayedActivation.delayTime);
+        
+        if (delayedActivation.targetObject != null)
+        {
+            delayedActivation.targetObject.SetActive(true);
+            
+            // SEを再生
+            if (playSEOnDelayedActivation && audioSource != null)
+            {
+                // カスタムSEが設定されている場合はそれを再生
+                if (delayedActivation.playCustomSE && delayedActivation.customSE != null)
+                {
+                    audioSource.PlayOneShot(delayedActivation.customSE);
+                }
+                // カスタムSEが設定されていない場合はデフォルトSEを再生
+                else if (delayedActivationSE != null)
+                {
+                    audioSource.PlayOneShot(delayedActivationSE);
+                }
+            }
+        }
     }
     
     /// <summary>
@@ -426,6 +556,161 @@ public class SimpleLoadingBar : MonoBehaviour
         return barValue;
     }
     
+    /// <summary>
+    /// 自動進行を開始
+    /// </summary>
+    public void StartAutoFill()
+    {
+        if (autoFillCoroutine != null)
+        {
+            StopCoroutine(autoFillCoroutine);
+        }
+        
+        isAutoFilling = true;
+        autoFillCoroutine = StartCoroutine(AutoFillCoroutine());
+    }
+    
+    /// <summary>
+    /// 自動進行を停止
+    /// </summary>
+    public void StopAutoFill()
+    {
+        isAutoFilling = false;
+        
+        if (autoFillCoroutine != null)
+        {
+            StopCoroutine(autoFillCoroutine);
+        }
+    }
+    
+    /// <summary>
+    /// 自動進行コルーチン
+    /// </summary>
+    private IEnumerator AutoFillCoroutine()
+    {
+        while (isAutoFilling)
+        {
+            // 現在の進捗を取得
+            float currentPercent = GetProgressPercent();
+            
+            // 進捗を追加
+            float addAmount = autoFillSpeed * Time.deltaTime;
+            AddProgressPercent(addAmount);
+            
+            // 100%に達した場合
+            if (currentPercent >= 100f)
+            {
+                if (loopAutoFill)
+                {
+                    // ループする場合はリセット
+                    ResetLoading();
+                }
+                else
+                {
+                    // ループしない場合は停止
+                    StopAutoFill();
+                }
+            }
+            
+            yield return null;
+        }
+    }
+    
+    /// <summary>
+    /// 自動進行の設定
+    /// </summary>
+    public void SetAutoFillSettings(bool autoFillOnEnable, float speed, bool loop)
+    {
+        this.autoFillOnEnable = autoFillOnEnable;
+        this.autoFillSpeed = speed;
+        this.loopAutoFill = loop;
+    }
+    
+    /// <summary>
+    /// 自動進行中かどうかを取得
+    /// </summary>
+    public bool IsAutoFilling()
+    {
+        return isAutoFilling;
+    }
+    
+    /// <summary>
+    /// 完了時実行機能の設定
+    /// </summary>
+    public void SetCompletionActions(bool enable, GameObject[] deactivateObjects, GameObject[] activateObjects, DelayedActivation[] delayedObjects)
+    {
+        enableCompletionActions = enable;
+        objectsToDeactivate = deactivateObjects;
+        objectsToActivate = activateObjects;
+        delayedActivations = delayedObjects;
+    }
+    
+    /// <summary>
+    /// 完了時実行機能を有効/無効にする
+    /// </summary>
+    public void SetCompletionActionsEnabled(bool enabled)
+    {
+        enableCompletionActions = enabled;
+    }
+    
+    /// <summary>
+    /// 非アクティブにするオブジェクトを設定
+    /// </summary>
+    public void SetObjectsToDeactivate(GameObject[] objects)
+    {
+        objectsToDeactivate = objects;
+    }
+    
+    /// <summary>
+    /// アクティブにするオブジェクトを設定
+    /// </summary>
+    public void SetObjectsToActivate(GameObject[] objects)
+    {
+        objectsToActivate = objects;
+    }
+    
+    /// <summary>
+    /// 遅延実行するオブジェクトを設定
+    /// </summary>
+    public void SetDelayedActivations(DelayedActivation[] delayedObjects)
+    {
+        delayedActivations = delayedObjects;
+    }
+    
+    /// <summary>
+    /// SE設定を変更
+    /// </summary>
+    public void SetSESettings(AudioSource audioSource, AudioClip activationSE, AudioClip delayedActivationSE, bool playOnActivation, bool playOnDelayedActivation)
+    {
+        this.audioSource = audioSource;
+        this.activationSE = activationSE;
+        this.delayedActivationSE = delayedActivationSE;
+        this.playSEOnActivation = playOnActivation;
+        this.playSEOnDelayedActivation = playOnDelayedActivation;
+    }
+    
+    /// <summary>
+    /// アクティブ時のSEを再生
+    /// </summary>
+    public void PlayActivationSE()
+    {
+        if (audioSource != null && activationSE != null)
+        {
+            audioSource.PlayOneShot(activationSE);
+        }
+    }
+    
+    /// <summary>
+    /// 遅延アクティブ時のSEを再生
+    /// </summary>
+    public void PlayDelayedActivationSE()
+    {
+        if (audioSource != null && delayedActivationSE != null)
+        {
+            audioSource.PlayOneShot(delayedActivationSE);
+        }
+    }
+    
     void OnValidate()
     {
         // Inspectorで値が変更された時に呼ばれる
@@ -444,6 +729,11 @@ public class SimpleLoadingBar : MonoBehaviour
         if (fillCoroutine != null)
         {
             StopCoroutine(fillCoroutine);
+        }
+        
+        if (autoFillCoroutine != null)
+        {
+            StopCoroutine(autoFillCoroutine);
         }
     }
 }

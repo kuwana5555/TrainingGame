@@ -19,9 +19,18 @@ public class CameraProjection : MonoBehaviour
     [Header("デバッグ設定")]
     [SerializeField] private bool enableDebugLogs = true; // デバッグログを有効にする
     
+    [Header("監視カメラ効果")]
+    [SerializeField] private bool enableSecurityEffect = true; // 監視カメラ効果を有効にする
+    [SerializeField] private float noiseIntensity = 0.1f; // ノイズの強度（0.0-1.0）
+    [SerializeField] private float scanlineSpeed = 2.0f; // スキャンラインの速度
+    [SerializeField] private bool enableScanlines = true; // スキャンラインを有効にする
+    [SerializeField] private bool enableStaticNoise = true; // 静的ノイズを有効にする
+    
     private WebCamTexture webCamTexture;
     private bool isCameraActive = false;
     private bool isWebCamTextureReady = false; // WebCamTextureが準備完了かどうか
+    private Texture2D processedTexture; // 処理済みテクスチャ
+    private float scanlineOffset = 0f; // スキャンラインのオフセット
     
     void Start()
     {
@@ -45,6 +54,12 @@ public class CameraProjection : MonoBehaviour
             {
                 StartCamera();
             }
+        }
+        
+        // 監視カメラ効果の更新
+        if (isCameraActive && enableSecurityEffect && targetRawImage != null)
+        {
+            UpdateSecurityEffect();
         }
     }
     
@@ -126,6 +141,13 @@ public class CameraProjection : MonoBehaviour
         {
             webCamTexture.Stop();
             webCamTexture = null;
+        }
+        
+        // 処理済みテクスチャをクリーンアップ
+        if (processedTexture != null)
+        {
+            DestroyImmediate(processedTexture);
+            processedTexture = null;
         }
         
         // RawImageからテクスチャを削除
@@ -240,8 +262,16 @@ public class CameraProjection : MonoBehaviour
             return;
         }
         
-        // 参考サイトの方法：直接WebCamTextureを設定
-        targetRawImage.texture = webCamTexture;
+        // 監視カメラ効果を適用
+        if (enableSecurityEffect)
+        {
+            ApplySecurityEffect();
+        }
+        else
+        {
+            // 参考サイトの方法：直接WebCamTextureを設定
+            targetRawImage.texture = webCamTexture;
+        }
         
         if (enableDebugLogs)
         {
@@ -328,5 +358,141 @@ public class CameraProjection : MonoBehaviour
         Debug.Log($"  フレームレート: {webCamTexture.requestedFPS}");
         Debug.Log($"  再生中: {webCamTexture.isPlaying}");
         Debug.Log($"  ピクセル数: {webCamTexture.GetPixels().Length}");
+    }
+    
+    /// <summary>
+    /// 監視カメラ効果の更新
+    /// </summary>
+    private void UpdateSecurityEffect()
+    {
+        if (webCamTexture == null || !webCamTexture.isPlaying) return;
+        
+        // スキャンラインのオフセットを更新
+        scanlineOffset += scanlineSpeed * Time.deltaTime;
+        if (scanlineOffset > 1f) scanlineOffset = 0f;
+        
+        // 監視カメラ効果を適用
+        ApplySecurityEffect();
+    }
+    
+    /// <summary>
+    /// 監視カメラ効果を適用
+    /// </summary>
+    private void ApplySecurityEffect()
+    {
+        if (webCamTexture == null || targetRawImage == null) return;
+        
+        // 処理済みテクスチャを作成または更新
+        if (processedTexture == null || 
+            processedTexture.width != webCamTexture.width || 
+            processedTexture.height != webCamTexture.height)
+        {
+            if (processedTexture != null)
+            {
+                DestroyImmediate(processedTexture);
+            }
+            processedTexture = new Texture2D(webCamTexture.width, webCamTexture.height);
+        }
+        
+        // WebCamTextureからピクセルデータを取得
+        Color[] pixels = webCamTexture.GetPixels();
+        
+        // 監視カメラ効果を適用
+        Color[] processedPixels = ApplySecurityEffects(pixels, webCamTexture.width, webCamTexture.height);
+        
+        // 処理済みテクスチャに設定
+        processedTexture.SetPixels(processedPixels);
+        processedTexture.Apply();
+        
+        // RawImageに適用
+        targetRawImage.texture = processedTexture;
+    }
+    
+    /// <summary>
+    /// 監視カメラ効果をピクセルに適用
+    /// </summary>
+    private Color[] ApplySecurityEffects(Color[] originalPixels, int width, int height)
+    {
+        Color[] processedPixels = new Color[originalPixels.Length];
+        
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int index = y * width + x;
+                Color originalColor = originalPixels[index];
+                Color processedColor = originalColor;
+                
+                // 静的ノイズを適用
+                if (enableStaticNoise)
+                {
+                    processedColor = ApplyStaticNoise(processedColor, x, y);
+                }
+                
+                // スキャンラインを適用
+                if (enableScanlines)
+                {
+                    processedColor = ApplyScanlines(processedColor, y);
+                }
+                
+                processedPixels[index] = processedColor;
+            }
+        }
+        
+        return processedPixels;
+    }
+    
+    /// <summary>
+    /// 静的ノイズを適用
+    /// </summary>
+    private Color ApplyStaticNoise(Color color, int x, int y)
+    {
+        // ランダムノイズを生成
+        float noise = Mathf.PerlinNoise(x * 0.1f + Time.time, y * 0.1f + Time.time);
+        noise = (noise - 0.5f) * 2f; // -1 to 1 の範囲に正規化
+        
+        // ノイズ強度を適用
+        float noiseAmount = noise * noiseIntensity;
+        
+        // 色にノイズを適用
+        color.r = Mathf.Clamp01(color.r + noiseAmount);
+        color.g = Mathf.Clamp01(color.g + noiseAmount);
+        color.b = Mathf.Clamp01(color.b + noiseAmount);
+        
+        return color;
+    }
+    
+    /// <summary>
+    /// スキャンラインを適用
+    /// </summary>
+    private Color ApplyScanlines(Color color, int y)
+    {
+        // スキャンラインの位置を計算
+        float scanlinePosition = (y / (float)webCamTexture.height + scanlineOffset) % 1f;
+        
+        // スキャンラインの強度を計算
+        float scanlineIntensity = Mathf.Sin(scanlinePosition * Mathf.PI * 2f) * 0.1f + 0.9f;
+        
+        // 色にスキャンライン効果を適用
+        color.r *= scanlineIntensity;
+        color.g *= scanlineIntensity;
+        color.b *= scanlineIntensity;
+        
+        return color;
+    }
+    
+    /// <summary>
+    /// 監視カメラ効果の設定を変更
+    /// </summary>
+    public void SetSecurityEffect(bool enabled, float noise = 0.1f, float scanSpeed = 2.0f)
+    {
+        enableSecurityEffect = enabled;
+        noiseIntensity = Mathf.Clamp01(noise);
+        scanlineSpeed = scanSpeed;
+        
+        if (enableDebugLogs)
+        {
+            Debug.Log($"監視カメラ効果: {(enabled ? "有効" : "無効")} (ノイズ: {noiseIntensity}, スキャン速度: {scanlineSpeed})");
+        }
     }
 }
