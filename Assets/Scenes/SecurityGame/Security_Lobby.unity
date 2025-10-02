@@ -3166,6 +3166,8 @@ MonoBehaviour:
   rules:
   - allowedPreviousScenes:
     - Security_Stage1
+    - Security_Stage1-2CheckPoint
+    - Security_Stage1-3CheckPoint
     invertCondition: 0
     objectsToActivate:
     - {fileID: 598448253}
@@ -3174,6 +3176,8 @@ MonoBehaviour:
     - {fileID: 1395084315}
   - allowedPreviousScenes:
     - Security_Stage2
+    - Security_Stage2-2CheckPoint
+    - Security_Stage2-3CheckPoint
     invertCondition: 0
     objectsToActivate:
     - {fileID: 598448253}
