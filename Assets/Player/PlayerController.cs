@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -13,30 +11,30 @@ public class PlayerController : MonoBehaviour
     bool goJump = false;            //ジャンプ開始フラグ
     // アニメーション対応
     Animator animator; // アニメーター
-    public string stopAnime = "PlayerStop";
-    public string moveAnime = "PlayerMove";
-    public string jumpAnime = "PlayerJump";
-    public string goalAnime = "PlayerGoal";
-    public string deadAnime = "PlayerOver";
+    public string stopAnime = "PlayerStop_Neno";
+    public string moveAnime = "PlayerMove_Neno";
+    public string jumpAnime = "PlayerJump_Neno";
+    public string goalAnime = "PlayerGoal_Neno";
+    public string deadAnime = "PlayerOver_Neno";
     string nowAnime = "";
     string oldAnime = "";
     public static string gameState = "playing"; // ゲームの状態
 
     public int score = 0;       // スコア
     public static Vector3 CheckPoint = new Vector3();
-    
+
     [Header("リスポーン設定")]
     public float respawnDelay = 2.0f;    // リスポーンまでの遅延時間（秒）
     public bool useCheckPoint = true;    // チェックポイントを使用するか
     public Vector3 respawnPosition = Vector3.zero; // リスポーン位置（チェックポイント未使用時）
-    
+
     [Header("カメラ・フェード設定")]
     public bool useCameraControl = true;     // カメラ制御を使用するか
     public bool useFadeEffect = true;        // フェード効果を使用するか
     public float fadeOutTime = 1.0f;         // フェードアウト時間（秒）
     public float fadeInTime = 1.0f;          // フェードイン時間（秒）
     public float cameraFollowDelay = 0.5f;   // カメラ追従再開までの遅延（秒）
-    
+
     [Header("ダッシュ設定")]
     public bool dashEnabled = false;         // ダッシュ機能が有効かどうか
     public float dashSpeed = 6.0f;          // ダッシュ時の最大速度
@@ -44,11 +42,11 @@ public class PlayerController : MonoBehaviour
     public float dashDeceleration = 3.0f;   // ダッシュの減速速度
     public KeyCode dashKey = KeyCode.LeftShift; // ダッシュキー
     public bool requireGroundForDash = true; // ダッシュに地面が必要か
-    
+
     [Header("ダッシュ演出")]
     public TrailRenderer dashTrail;          // ダッシュ時のトレイル
     public bool autoFindDashTrail = true;    // 自動検索して適用するか
-    
+
     [Header("キック設定")]
     public bool enableKick = true;          // キック機能が有効かどうか
     public float kickForceMultiplier = 1.0f; // キック力の倍率
@@ -56,11 +54,11 @@ public class PlayerController : MonoBehaviour
     public float minKickForce = 5.0f;       // 最小キック力
     public float maxKickForce = 15.0f;      // 最大キック力
     public string kickableTag = "Kickable"; // キック可能なオブジェクトのタグ
-    
+
     // リスポーン制御用の変数
     private bool isRespawning = false;   // リスポーン中かどうか
     private Coroutine respawnCoroutine;  // リスポーンコルーチンの参照
-    
+
     // カメラ・フェード制御用の変数
     private CameraManager cameraManager; // カメラマネージャーの参照
     private ScreenFader screenFader;     // フェード用のScreenFader
@@ -77,12 +75,12 @@ public class PlayerController : MonoBehaviour
     [Header("Player Kick Sound")]
     [SerializeField] AudioClip KickSE;
     [SerializeField] float KickSEVolume = 0.6f;
-    
+
     // ダッシュ制御用の変数
     private bool isDashing = false;         // ダッシュ中かどうか
     private float currentDashSpeed = 0f;    // 現在のダッシュ速度
     private bool dashKeyPressed = false;    // ダッシュキーが押されているか
-    
+
     // キック制御用の変数
     private bool canKick = false;           // キック可能かどうか
     private float lastKickTime = 0f;        // 最後にキックした時間
@@ -96,10 +94,10 @@ public class PlayerController : MonoBehaviour
         nowAnime = stopAnime;                       //停止から開始する
         oldAnime = stopAnime;                       //停止から開始する
         gameState = "playing";                      // ゲーム中にする
-        
+
         // カメラ・フェード関連の初期化
         InitializeCameraAndFade();
-        
+
         if (CheckPoint != Vector3.zero)
         {
             transform.position = CheckPoint;
@@ -147,13 +145,13 @@ public class PlayerController : MonoBehaviour
         {
             Jump();
         }
-        
+
         // ダッシュキーの入力処理
         if (dashEnabled)
         {
             dashKeyPressed = Input.GetKey(dashKey);
         }
-        
+
         // キック可能状態の更新
         UpdateKickAvailability();
     }
@@ -221,7 +219,7 @@ public class PlayerController : MonoBehaviour
             // 空中
             nowAnime = jumpAnime;
         }
-        if(nowAnime != oldAnime)
+        if (nowAnime != oldAnime)
         {
             oldAnime = nowAnime;
             animator.Play(nowAnime);        // アニメーション再生
@@ -285,17 +283,17 @@ public class PlayerController : MonoBehaviour
             Debug.Log("既にリスポーン処理中のため、新しいリスポーン処理をスキップしました");
             return;
         }
-        
+
         animator.Play(deadAnime);
         gameState = "gameover";
         GameStop();
-        
+
         // ゲーム停止（ゲームオーバー演出）
         // プレイヤー当たりを消す
         GetComponent<CapsuleCollider2D>().enabled = false;
         // プレイヤーを上に少し跳ね上げる演出
         rbody.AddForce(new Vector2(0, 5), ForceMode2D.Impulse);
-        
+
         // リスポーン処理を開始
         if (respawnCoroutine != null)
         {
@@ -303,68 +301,68 @@ public class PlayerController : MonoBehaviour
         }
         respawnCoroutine = StartCoroutine(RespawnCoroutine());
     }
-    
+
     // リスポーン処理
     private IEnumerator RespawnCoroutine()
     {
         // リスポーン中フラグを設定
         isRespawning = true;
-        
+
         Debug.Log("リスポーン処理を開始しました");
-        
+
         // カメラ追従を停止
         if (useCameraControl)
         {
             DisableCameraFollow();
         }
-        
+
         // フェードアウト
         if (useFadeEffect)
         {
             yield return StartCoroutine(FadeOutCoroutine());
         }
-        
+
         // 遅延時間を待機
         yield return new WaitForSeconds(respawnDelay);
-        
+
         // リスポーン位置を決定
-        Vector3 respawnPos = useCheckPoint && CheckPoint != Vector3.zero ? 
+        Vector3 respawnPos = useCheckPoint && CheckPoint != Vector3.zero ?
             CheckPoint : respawnPosition;
-        
+
         // プレイヤーをリスポーン位置に移動
         transform.position = respawnPos;
-        
+
         // コライダーを再有効化
         GetComponent<CapsuleCollider2D>().enabled = true;
-        
+
         // 速度をリセット
         rbody.velocity = Vector2.zero;
-        
+
         // ゲーム状態をプレイ中に戻す
         gameState = "playing";
-        
+
         // アニメーションを通常に戻す
         nowAnime = stopAnime;
         oldAnime = stopAnime;
         animator.Play(stopAnime);
-        
+
         // カメラ追従を再開（遅延あり）
         if (useCameraControl)
         {
             yield return new WaitForSeconds(cameraFollowDelay);
             EnableCameraFollow();
         }
-        
+
         // フェードイン
         if (useFadeEffect)
         {
             yield return StartCoroutine(FadeInCoroutine());
         }
-        
+
         // リスポーン中フラグを解除
         isRespawning = false;
         respawnCoroutine = null;
-        
+
         Debug.Log($"プレイヤーをリスポーンしました: {respawnPos}");
     }
     // ゲーム停止
@@ -388,7 +386,7 @@ public class PlayerController : MonoBehaviour
             isMoving = true;
         }
     }
-    
+
     // 手動でリスポーン（デバッグ用）
     [ContextMenu("Manual Respawn")]
     public void ManualRespawn()
@@ -406,7 +404,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("既にリスポーン処理中のため、手動リスポーンをスキップしました");
         }
     }
-    
+
     // リスポーン処理を強制停止（デバッグ用）
     [ContextMenu("Force Stop Respawn")]
     public void ForceStopRespawn()
@@ -419,21 +417,21 @@ public class PlayerController : MonoBehaviour
         isRespawning = false;
         Debug.Log("リスポーン処理を強制停止しました");
     }
-    
+
     // リスポーン位置を設定
     public void SetRespawnPosition(Vector3 position)
     {
         respawnPosition = position;
         Debug.Log($"リスポーン位置を設定しました: {position}");
     }
-    
+
     // チェックポイントを設定
     public void SetCheckPoint(Vector3 position)
     {
         CheckPoint = position;
         Debug.Log($"チェックポイントを設定しました: {position}");
     }
-    
+
     // カメラ・フェード関連の初期化
     private void InitializeCameraAndFade()
     {
@@ -443,7 +441,7 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogWarning("CameraManagerが見つかりません。カメラ制御機能は無効になります。");
         }
-        
+
         // ScreenFaderを検索
         screenFader = FindObjectOfType<ScreenFader>();
         if (screenFader == null)
@@ -451,7 +449,7 @@ public class PlayerController : MonoBehaviour
             Debug.LogWarning("ScreenFaderが見つかりません。フェード効果は無効になります。");
         }
     }
-    
+
     // カメラ追従を停止
     private void DisableCameraFollow()
     {
@@ -463,7 +461,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("カメラ追従を停止しました");
         }
     }
-    
+
     // カメラ追従を再開
     private void EnableCameraFollow()
     {
@@ -473,7 +471,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("カメラ追従を再開しました");
         }
     }
-    
+
     // フェードアウト処理
     private IEnumerator FadeOutCoroutine()
     {
@@ -489,7 +487,7 @@ public class PlayerController : MonoBehaviour
             Debug.LogWarning("ScreenFaderが設定されていません。フェードアウトをスキップします。");
         }
     }
-    
+
     // フェードイン処理
     private IEnumerator FadeInCoroutine()
     {
@@ -505,7 +503,7 @@ public class PlayerController : MonoBehaviour
             Debug.LogWarning("ScreenFaderが設定されていません。フェードインをスキップします。");
         }
     }
-    
+
     /// <summary>
     /// ダッシュ速度を更新
     /// </summary>
@@ -513,7 +511,7 @@ public class PlayerController : MonoBehaviour
     {
         // ダッシュキーが押されているかチェック
         bool canDash = dashKeyPressed && (!requireGroundForDash || onGround);
-        
+
         if (canDash && axisH != 0)
         {
             // ダッシュ中
@@ -527,14 +525,14 @@ public class PlayerController : MonoBehaviour
             currentDashSpeed = Mathf.MoveTowards(currentDashSpeed, 0f, dashDeceleration * Time.fixedDeltaTime);
         }
     }
-    
+
     /// <summary>
     /// ダッシュ機能を有効/無効にする
     /// </summary>
     public void SetDashEnabled(bool enabled)
     {
         dashEnabled = enabled;
-        
+
         // 無効にした場合はダッシュ状態をリセット
         if (!enabled)
         {
@@ -542,10 +540,10 @@ public class PlayerController : MonoBehaviour
             currentDashSpeed = 0f;
             dashKeyPressed = false;
         }
-        
+
         Debug.Log($"ダッシュ機能を{(enabled ? "有効" : "無効")}にしました");
     }
-    
+
     /// <summary>
     /// ダッシュ機能が有効かどうかを取得
     /// </summary>
@@ -553,7 +551,7 @@ public class PlayerController : MonoBehaviour
     {
         return dashEnabled;
     }
-    
+
     /// <summary>
     /// 現在ダッシュ中かどうかを取得
     /// </summary>
@@ -561,7 +559,7 @@ public class PlayerController : MonoBehaviour
     {
         return isDashing;
     }
-    
+
     /// <summary>
     /// 現在のダッシュ速度を取得
     /// </summary>
@@ -569,7 +567,7 @@ public class PlayerController : MonoBehaviour
     {
         return currentDashSpeed;
     }
-    
+
     /// <summary>
     /// ダッシュトレイルのemitting制御
     /// </summary>
@@ -592,10 +590,10 @@ public class PlayerController : MonoBehaviour
         dashSpeed = newDashSpeed;
         dashAcceleration = newAcceleration;
         dashDeceleration = newDeceleration;
-        
+
         Debug.Log($"ダッシュ設定を更新しました - 速度: {dashSpeed}, 加速: {dashAcceleration}, 減速: {dashDeceleration}");
     }
-    
+
     /// <summary>
     /// キック可能状態を更新
     /// </summary>
@@ -606,11 +604,11 @@ public class PlayerController : MonoBehaviour
             canKick = false;
             return;
         }
-        
+
         // ダッシュ中で、クールダウンが終了している場合のみキック可能
         canKick = isDashing && (Time.time - lastKickTime >= kickCooldown);
     }
-    
+
     /// <summary>
     /// オブジェクトをキックする
     /// </summary>
@@ -620,7 +618,7 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
-        
+
         // Rigidbody2Dを取得
         Rigidbody2D targetRigidbody = targetObject.GetComponent<Rigidbody2D>();
         if (targetRigidbody == null)
@@ -628,7 +626,7 @@ public class PlayerController : MonoBehaviour
             Debug.LogWarning($"キック対象オブジェクトにRigidbody2Dがありません: {targetObject.name}");
             return;
         }
-        
+
         // キック実行
         KickObject(targetRigidbody);
 
@@ -637,12 +635,12 @@ public class PlayerController : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(KickSE, Camera.main.transform.position, Mathf.Clamp01(KickSEVolume));
         }
-        
+
         // クールダウン開始
         lastKickTime = Time.time;
         canKick = false;
     }
-    
+
     /// <summary>
     /// オブジェクトにキック力を加える
     /// </summary>
@@ -651,23 +649,23 @@ public class PlayerController : MonoBehaviour
         // 現在のダッシュ速度に基づいてキック力を計算
         float speedRatio = Mathf.Clamp01(currentDashSpeed / dashSpeed);
         float kickForce = Mathf.Lerp(minKickForce, maxKickForce, speedRatio) * kickForceMultiplier;
-        
+
         // キック方向を正規化
         Vector2 normalizedKickDirection = kickDirection.normalized;
-        
+
         // プレイヤーの向きに応じてキック方向を調整
         if (transform.localScale.x < 0) // 左向きの場合
         {
             normalizedKickDirection.x = -normalizedKickDirection.x;
         }
-        
+
         // キック力を適用
         Vector2 kickForceVector = normalizedKickDirection * kickForce;
         targetRigidbody.AddForce(kickForceVector, ForceMode2D.Impulse);
-        
+
         Debug.Log($"キック実行: 力={kickForce:F2}, 方向={normalizedKickDirection}, 速度比={speedRatio:F2}");
     }
-    
+
     /// <summary>
     /// キック機能を有効/無効にする
     /// </summary>
@@ -680,7 +678,7 @@ public class PlayerController : MonoBehaviour
         }
         Debug.Log($"キック機能を{(enabled ? "有効" : "無効")}にしました");
     }
-    
+
     /// <summary>
     /// キック機能が有効かどうかを取得
     /// </summary>
@@ -688,7 +686,7 @@ public class PlayerController : MonoBehaviour
     {
         return enableKick;
     }
-    
+
     /// <summary>
     /// 現在キック可能かどうかを取得
     /// </summary>
@@ -696,7 +694,7 @@ public class PlayerController : MonoBehaviour
     {
         return canKick;
     }
-    
+
     /// <summary>
     /// キック設定を更新
     /// </summary>
@@ -706,24 +704,24 @@ public class PlayerController : MonoBehaviour
         maxKickForce = newMaxForce;
         kickDirection = newDirection;
         kickForceMultiplier = newMultiplier;
-        
+
         Debug.Log($"キック設定を更新しました - 最小力: {minKickForce}, 最大力: {maxKickForce}, 方向: {kickDirection}, 倍率: {kickForceMultiplier}");
     }
-    
+
     // デバッグ用：Inspectorでボタンからキック機能を有効化
     [ContextMenu("Enable Kick")]
     public void ManualEnableKick()
     {
         SetKickEnabled(true);
     }
-    
+
     // デバッグ用：Inspectorでボタンからキック機能を無効化
     [ContextMenu("Disable Kick")]
     public void ManualDisableKick()
     {
         SetKickEnabled(false);
     }
-    
+
     // デバッグ用：Inspectorでボタンからキック状態を表示
     [ContextMenu("Show Kick Status")]
     public void ManualShowKickStatus()

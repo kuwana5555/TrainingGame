@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_Sprite: {fileID: 21300000, guid: 8049a31a9c05b3c42b401e59abf1b135, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 85568ba0dc978cc43bb94d6615f5aeb2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -137,11 +137,11 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
-  stopAnime: PlayerStop
-  moveAnime: PlayerMove
-  jumpAnime: PlayerJump
-  goalAnime: PlayerGoal
-  deadAnime: PlayerOver
+  stopAnime: PlayerStop_Neno
+  moveAnime: PlayerMove_Neno
+  jumpAnime: PlayerJump_Neno
+  goalAnime: PlayerGoal_Neno
+  deadAnime: PlayerOver_Neno
   score: 0
   respawnDelay: 2
   useCheckPoint: 1
@@ -181,7 +181,7 @@ Animator:
   m_GameObject: {fileID: 451426258700212465}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 6fb643af3e77b42f3998bedcb12812dd, type: 2}
+  m_Controller: {fileID: 9100000, guid: 6b8ee69009dbca242a370acfd1152e38, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
