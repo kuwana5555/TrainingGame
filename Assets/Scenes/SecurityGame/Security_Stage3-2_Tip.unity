@@ -217,7 +217,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 534373230760329919, guid: b2ba6245e80044e4ab9202d58674d689, type: 3}
       propertyPath: fullText
-      value: "\u60C5\u5831\u30BB\u30AD\u30E5\u30EA\u30C6\u30A3\u306E\u5BFE\u7B56\u306B\u306F\u300C\u6280\u8853\u3067\u9632\u3050\u300D\u300C\u30EB\u30FC\u30EB\u3067\u9632\u3050\u300D\u300C\u7269\u7406\u7684\u306B\u5B88\u308B\u300D\u306E\uFF13\u3064\u306E\u65B9\u5411\u304C\u3042\u308A\u307E\u3059\u3002"
+      value: "\u30A2\u30C3\u30D7\u30C7\u30FC\u30C8\u306F\u201C\u7A74\u201D\u3092\u585E\u3050\u305F\u3081\u3002"
       objectReference: {fileID: 0}
     - target: {fileID: 2592292631214074338, guid: b2ba6245e80044e4ab9202d58674d689, type: 3}
       propertyPath: m_Name
@@ -226,10 +226,6 @@ PrefabInstance:
     - target: {fileID: 2592292631214074338, guid: b2ba6245e80044e4ab9202d58674d689, type: 3}
       propertyPath: m_IsActive
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2946828160014963005, guid: b2ba6245e80044e4ab9202d58674d689, type: 3}
-      propertyPath: m_text
-      value: "\u60C5\u5831\u30BB\u30AD\u30E5\u30EA\u30C6\u30A3\u306E\u5BFE\u7B56\u306B\u306F\u300C\u6280\u8853\u3067\u9632\u3050\u300D\u300C\u30EB\u30FC\u30EB\u3067\u9632\u3050\u300D\u300C\u7269\u7406\u7684\u306B\u5B88\u308B\u300D\u306E\uFF13\u3064\u306E\u65B9\u5411\u304C\u3042\u308A\u307E\u3059\u3002"
       objectReference: {fileID: 0}
     - target: {fileID: 5309129935438084740, guid: b2ba6245e80044e4ab9202d58674d689, type: 3}
       propertyPath: m_Pivot.x
@@ -785,7 +781,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u30B9\u30C6\u30FC\u30B8\uFF11"
+  m_text: "\u30B9\u30C6\u30FC\u30B83"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a529816ee7dfd0b479ab54896152f0d2, type: 2}
   m_sharedMaterial: {fileID: 3807366379558427762, guid: a529816ee7dfd0b479ab54896152f0d2, type: 2}
@@ -3030,7 +3026,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogueText: {fileID: 1223192678}
-  fullText: "Stage1-3\u306ETips"
+  fullText: "Stage2-3\u306ETips"
   displayInterval: 0.2
   autoStart: 1
   useTypewriterEffect: 1
@@ -3337,7 +3333,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 045006b86a71c554aa647f546e4eb04e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 565d358a2e25d0e409a298f57a513591, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -3357,7 +3353,7 @@ Transform:
   m_GameObject: {fileID: 1596702047}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.18, y: -1.23, z: -1}
+  m_LocalPosition: {x: 12.18, y: -0.75, z: -1}
   m_LocalScale: {x: 1.2062, y: 1.2062, z: 1.2062}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3382,7 +3378,7 @@ MonoBehaviour:
   useKey1: 1
   useKey2: 0
   requireHold: 0
-  targetSceneName: Security_Stage1-3CheckPoint
+  targetSceneName: Security_Stage3-2CheckPoint
   transitionDelay: 0.5
   useFadeTransition: 1
   fadeTime: 1
