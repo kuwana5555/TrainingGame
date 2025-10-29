@@ -3382,7 +3382,7 @@ MonoBehaviour:
   useKey1: 1
   useKey2: 0
   requireHold: 0
-  targetSceneName: Security_Stage1-2CheckPoint
+  targetSceneName: Security_Stage1-2-CheckPoint
   transitionDelay: 0.5
   useFadeTransition: 1
   fadeTime: 1

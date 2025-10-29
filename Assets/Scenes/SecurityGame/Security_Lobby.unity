@@ -4021,7 +4021,9 @@ MonoBehaviour:
   - allowedPreviousScenes:
     - Security_Stage1
     - Security_Stage1-2CheckPoint
+    - Security_Stage1-2-CheckPoint
     - Security_Stage1-3CheckPoint
+    - Security_Stage1-3-CheckPoint
     invertCondition: 0
     objectsToActivate:
     - {fileID: 598448253}
@@ -4031,7 +4033,9 @@ MonoBehaviour:
   - allowedPreviousScenes:
     - Security_Stage2
     - Security_Stage2-2CheckPoint
+    - Security_Stage2-2-CheckPoint
     - Security_Stage2-3CheckPoint
+    - Security_Stage2-3-CheckPoint
     invertCondition: 0
     objectsToActivate:
     - {fileID: 598448253}
@@ -4044,7 +4048,9 @@ MonoBehaviour:
   - allowedPreviousScenes:
     - Security_Stage3
     - Security_Stage3-2CheckPoint
+    - Security_Stage3-2-CheckPoint
     - Security_Stage3-3CheckPoint
+    - Security_Stage3-3-CheckPoint
     invertCondition: 0
     objectsToActivate:
     - {fileID: 598448253}
