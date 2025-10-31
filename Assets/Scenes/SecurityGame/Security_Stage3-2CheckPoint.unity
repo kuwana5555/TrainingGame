@@ -1066,7 +1066,7 @@ MonoBehaviour:
   layerTargetObjects: []
   useLayerObjects: 0
   useItemCarrySystem: 1
-  grabbableTag: Kickable
+  grabbableTag: Grabbable
   virusLayer:
     serializedVersion: 2
     m_Bits: 128
@@ -29521,7 +29521,7 @@ MonoBehaviour:
   moveHorizontal: 0
   moveVertical: 1
   moveSpeed: 4
-  moveDistance: 13
+  moveDistance: 9
   usePingPong: 1
   startMoving: 1
   waitTime: 1
