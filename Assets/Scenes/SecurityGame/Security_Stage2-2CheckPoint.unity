@@ -5360,7 +5360,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Kickable
   targetObjects:
-  - {fileID: 0}
+  - {fileID: 932846823}
   activateOnEnter: 1
   deactivateOnExit: 0
   useMultiTrigger: 1
@@ -5383,7 +5383,7 @@ MonoBehaviour:
     m_Bits: 128
   excludeVirusFromCount: 1
   virusObjects:
-  - {fileID: 0}
+  - {fileID: 932846823}
   normalObjects: []
   useVirusTimer: 1
   virusDetectionTime: 1.5
@@ -9310,7 +9310,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Kickable
   targetObjects:
-  - {fileID: 0}
+  - {fileID: 932846823}
   activateOnEnter: 1
   deactivateOnExit: 0
   useMultiTrigger: 1
@@ -9333,7 +9333,7 @@ MonoBehaviour:
     m_Bits: 128
   excludeVirusFromCount: 1
   virusObjects:
-  - {fileID: 0}
+  - {fileID: 932846823}
   normalObjects: []
   useVirusTimer: 1
   virusDetectionTime: 1.5
@@ -9996,7 +9996,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Kickable
   targetObjects:
-  - {fileID: 0}
+  - {fileID: 932846823}
   activateOnEnter: 1
   deactivateOnExit: 0
   useMultiTrigger: 1
@@ -10019,7 +10019,7 @@ MonoBehaviour:
     m_Bits: 128
   excludeVirusFromCount: 1
   virusObjects:
-  - {fileID: 0}
+  - {fileID: 932846823}
   normalObjects: []
   useVirusTimer: 1
   virusDetectionTime: 1.5
@@ -14823,6 +14823,11 @@ PrefabInstance:
 --- !u!224 &932846822 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7056909962259366596, guid: 8a68be4029b6c7046b7f451ae4092bd6, type: 3}
+  m_PrefabInstance: {fileID: 932846821}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &932846823 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5890236361549752786, guid: 8a68be4029b6c7046b7f451ae4092bd6, type: 3}
   m_PrefabInstance: {fileID: 932846821}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &935208084
@@ -22602,7 +22607,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Kickable
   targetObjects:
-  - {fileID: 0}
+  - {fileID: 369834002}
   activateOnEnter: 1
   deactivateOnExit: 0
   useMultiTrigger: 1
@@ -22625,7 +22630,7 @@ MonoBehaviour:
     m_Bits: 128
   excludeVirusFromCount: 1
   virusObjects:
-  - {fileID: 0}
+  - {fileID: 369834002}
   normalObjects: []
   useVirusTimer: 1
   virusDetectionTime: 1.5

@@ -3026,7 +3026,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogueText: {fileID: 1223192678}
-  fullText: "Stage2-3\u306ETips"
+  fullText: "Stage3-2\u306ETips"
   displayInterval: 0.2
   autoStart: 1
   useTypewriterEffect: 1

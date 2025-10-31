@@ -6477,7 +6477,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Kickable
   targetObjects:
-  - {fileID: 0}
+  - {fileID: 1460943322}
   activateOnEnter: 1
   deactivateOnExit: 0
   useMultiTrigger: 1
@@ -6500,7 +6500,7 @@ MonoBehaviour:
     m_Bits: 128
   excludeVirusFromCount: 1
   virusObjects:
-  - {fileID: 0}
+  - {fileID: 1460943322}
   normalObjects: []
   useVirusTimer: 1
   virusDetectionTime: 1.5
@@ -7826,7 +7826,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Kickable
   targetObjects:
-  - {fileID: 0}
+  - {fileID: 1460943322}
   activateOnEnter: 1
   deactivateOnExit: 0
   useMultiTrigger: 1
@@ -7849,7 +7849,7 @@ MonoBehaviour:
     m_Bits: 128
   excludeVirusFromCount: 1
   virusObjects:
-  - {fileID: 0}
+  - {fileID: 1460943322}
   normalObjects: []
   useVirusTimer: 1
   virusDetectionTime: 1.5
@@ -15657,7 +15657,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Kickable
   targetObjects:
-  - {fileID: 0}
+  - {fileID: 1460943322}
   activateOnEnter: 1
   deactivateOnExit: 0
   useMultiTrigger: 1
@@ -15680,7 +15680,7 @@ MonoBehaviour:
     m_Bits: 128
   excludeVirusFromCount: 1
   virusObjects:
-  - {fileID: 0}
+  - {fileID: 1460943322}
   normalObjects: []
   useVirusTimer: 1
   virusDetectionTime: 1.5
@@ -20671,6 +20671,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 373121733057829982, guid: 75377c6e6e11c4c989806448ef843a63, type: 3}
   m_PrefabInstance: {fileID: 1430074609}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1460943322 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5890236361549752786, guid: 8a68be4029b6c7046b7f451ae4092bd6, type: 3}
+  m_PrefabInstance: {fileID: 932846821}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1472202385
 GameObject:
   m_ObjectHideFlags: 0
@@ -23028,7 +23033,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag: Kickable
   targetObjects:
-  - {fileID: 0}
+  - {fileID: 369834002}
   activateOnEnter: 1
   deactivateOnExit: 0
   useMultiTrigger: 1
