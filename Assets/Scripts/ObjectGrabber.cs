@@ -202,8 +202,20 @@ public class ObjectGrabber : MonoBehaviour
         Debug.Log($"オブジェクトを掴みました: {obj.name}");
     }
 
-    // オブジェクトを離す
+    // オブジェクトを離す（内部用）
     private void ReleaseObject()
+    {
+        ReleaseObjectInternal();
+    }
+    
+    // オブジェクトを離す（外部から呼び出し可能）
+    public void ReleaseGrabbedObject()
+    {
+        ReleaseObjectInternal();
+    }
+    
+    // オブジェクトを離す実装
+    private void ReleaseObjectInternal()
     {
         if (grabbedObject != null)
         {
