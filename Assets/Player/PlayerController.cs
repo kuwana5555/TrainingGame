@@ -117,6 +117,13 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Lキーでリスポーン位置に移動（ゲーム状態に関係なく実行可能）
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Debug.Log("Lキーが押されました");
+            TeleportToRespawnPosition();
+        }
+
         if (gameState != "playing")
         {
             return;
@@ -430,6 +437,62 @@ public class PlayerController : MonoBehaviour
     {
         CheckPoint = position;
         Debug.Log($"チェックポイントを設定しました: {position}");
+    }
+
+    /// <summary>
+    /// リスポーン位置にテレポート（Lキー用）
+    /// </summary>
+    private void TeleportToRespawnPosition()
+    {
+        Debug.Log("TeleportToRespawnPosition() が呼び出されました");
+        Debug.Log($"現在のrespawnPosition: {respawnPosition}");
+
+        // リスポーン位置が設定されているか確認
+        if (respawnPosition == Vector3.zero)
+        {
+            Debug.LogWarning("リスポーン位置が設定されていません。PlayerControllerのInspectorでrespawnPositionを設定してください。");
+            return;
+        }
+
+        Debug.Log($"現在のプレイヤー位置: {transform.position}");
+        Debug.Log($"テレポート先: {respawnPosition}");
+
+        // プレイヤーをリスポーン位置に移動
+        transform.position = respawnPosition;
+
+        // 慣性をリセット（速度をゼロに）
+        if (rbody != null)
+        {
+            rbody.velocity = Vector2.zero;
+            rbody.angularVelocity = 0f;
+            Debug.Log("速度をリセットしました");
+        }
+        else
+        {
+            Debug.LogWarning("Rigidbody2Dが見つかりません");
+        }
+
+        // ダッシュ状態をリセット
+        isDashing = false;
+        currentDashSpeed = 0f;
+        dashKeyPressed = false;
+
+        // キック状態をリセット
+        canKick = false;
+
+        // ジャンプフラグをリセット
+        goJump = false;
+
+        // アニメーションを停止状態にリセット
+        nowAnime = stopAnime;
+        oldAnime = stopAnime;
+        if (animator != null)
+        {
+            animator.Play(stopAnime);
+        }
+
+        Debug.Log($"リスポーン位置にテレポートしました: {respawnPosition}");
+        Debug.Log($"テレポート後のプレイヤー位置: {transform.position}");
     }
 
     // カメラ・フェード関連の初期化
