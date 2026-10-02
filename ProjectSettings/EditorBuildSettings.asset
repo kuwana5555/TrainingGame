@@ -63,7 +63,7 @@ EditorBuildSettings:
     path: Assets/Scenes/SecurityGame/Security_Stage2-0_Dash_Kick.unity
     guid: c90d9f0d34a79474b95cf6412743185b
   - enabled: 1
-    path: Assets/Scenes/SecurityGame/Security_Stage2.unity
+    path: Assets/Scenes/SecurityGame/Security_Stage2-3CheckPoint.unity
     guid: 7f190cc449987f74fbc038e2ebde6fcb
   - enabled: 1
     path: Assets/Scenes/SecurityGame/Security_Stage2-1_Tip.unity
@@ -77,4 +77,37 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SecurityGame/Security_Stage3.unity
     guid: ba5f5bfc87bd9ad4c927eab029db1008
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage1-2CheckPoint.unity
+    guid: cbc4d970ff5678940b38b06f4caaf3b7
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage1-3CheckPoint.unity
+    guid: 079fd5180c52650408d419c01c54d7ef
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage2-2CheckPoint.unity
+    guid: 914da8f4fb2572249a32c9c91e3ee4c6
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage2.unity
+    guid: 1ab428795f776e74aa3b0dc77d1c4709
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage3-1_Tip.unity
+    guid: d16ef94006547834d9a5ffe589ad9d29
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage3-2_Tip.unity
+    guid: 7a69a4d373ce2f64e81c14a5fb9c0dd7
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage3-2CheckPoint.unity
+    guid: b351870058042b342a95b414d97d5d25
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage3-3_Tip.unity
+    guid: aeb4ba4208f8a2a4488e7854c7124d6d
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage3-3CheckPoint.unity
+    guid: 24352df1ae3986c4ab7d48c21176b522
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage1-2-CheckPoint.unity
+    guid: 9f04138bd749cb24fa809727217aff80
+  - enabled: 1
+    path: Assets/Scenes/SecurityGame/Security_Stage1-3-CheckPoint.unity
+    guid: c1c8be27d93e2d640a65fc03e89adb0c
   m_configObjects: {}

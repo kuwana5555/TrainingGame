@@ -116,6 +116,30 @@ public class WarpTrigger : MonoBehaviour
             Debug.Log($"WarpTrigger: ワープ処理開始 - {targetObject.name}");
         }
         
+        // ObjectGrabberで何かを掴んでいる場合は離す
+        try
+        {
+            ObjectGrabber objectGrabber = targetObject.GetComponent<ObjectGrabber>();
+            if (objectGrabber == null)
+            {
+                // 子オブジェクトからも検索
+                objectGrabber = targetObject.GetComponentInChildren<ObjectGrabber>();
+            }
+            
+            if (objectGrabber != null && objectGrabber.IsGrabbing())
+            {
+                if (showDebugInfo)
+                {
+                    Debug.Log($"WarpTrigger: ObjectGrabberで掴んでいるオブジェクトを離します");
+                }
+                objectGrabber.ReleaseGrabbedObject();
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"WarpTrigger: ObjectGrabberの処理中にエラーが発生しました - {e.Message}");
+        }
+        
         // ワープ対象の移動を停止
         try
         {
